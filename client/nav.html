@@ -1,0 +1,9 @@
+<template name="nav">
+  <div class="ui fixed transparent inverted main menu">
+    <div class="header item">Meteor Autopublish</div>
+    <a class="{{isActiveRoute regex='home'}} item" href="{{pathFor 'home'}}">Home</a>
+    <div class="right menu">
+      {{> navButton}}
+    </div>
+  </div>
+</template>
