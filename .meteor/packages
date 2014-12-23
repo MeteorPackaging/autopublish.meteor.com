@@ -5,15 +5,14 @@
 # but you can also edit it by hand.
 
 meteor-platform
-autopublish
-insecure
 iron:router
 
 
-npm-container
 accounts-github
-bruz:github-api
 nooitaf:semantic-ui
 zimme:iron-router-active
 service-configuration
 less
+packaging:github-org-list
+
+
