@@ -20,6 +20,7 @@ Template.navButton.events({
           "user:email",
           "repo:status",
           "admin:repo_hook",
+          "read:org",
         ]
       });
     }
