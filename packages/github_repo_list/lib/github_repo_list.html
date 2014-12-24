@@ -1,0 +1,19 @@
+<template name="githubRepoList">
+  <div class="githubRepoList">
+    <div class="ui {{#unless ready}}loading{{/unless}} segment">
+      <h5 class="ui center aligned header">Repositories</h5>
+      <div class="ui divider"></div>
+      <div class="ui relaxed divided list">
+        {{#each orgs}}
+          <div class="{{active}} item">
+            <div class="content">
+              <a class="header">{{name}}</a>
+            </div>
+          </div>
+        {{else}}
+          No Repositories
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</template>
