@@ -12,6 +12,10 @@ Package.onUse(function(api) {
   api.versionsFrom('1.0.2');
 
   api.use([
+    'mongo',
+  ], ['client', 'server']);
+
+  api.use([
     'underscore',
   ], 'server');
 
@@ -20,16 +24,16 @@ Package.onUse(function(api) {
     ], 'server');
 
   api.use([
+    'reactive-var',
     'templating',
     'tracker',
   ], 'client');
 
-  api.use([
-    'mongo',
-  ], ['client', 'server']);
-
   api.addFiles([
+    'lib/github_org_list.css',
     'lib/github_org_list.html',
     'lib/github_org_list.js'
   ], 'client');
+
+  api.export('githubOrgList', 'client');
 });
