@@ -49,6 +49,7 @@ oauth2@1.1.2
 observe-sequence@1.0.4
 ordered-dict@1.0.2
 packaging:github-org-list@1.0.0
+packaging:github-repo-list@1.0.0
 random@1.0.2
 reactive-dict@1.0.5
 reactive-var@1.0.4
