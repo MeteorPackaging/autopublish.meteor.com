@@ -9,7 +9,7 @@ http://mikedeboer.github.io/node-github/
 
 - Repos
 
-https://developer.github.com/v3/repositories/
+https://developer.github.com/v3/repos/
 http://mikedeboer.github.io/node-github/#repositories
 
 - Hooks
@@ -28,7 +28,12 @@ var github = new GithubApi({
   version: "3.0.0"
 });
 
-Meteor.publish('ghRepos', function(){
+Meteor.publish('ghRepos', function(orgName){
+  if (!orgName) {
+    return this.ready();
+  }
+
+  check(orgName, Match.OneOf(String, Number));
   var
     self = this,
     user = Meteor.users.findOne(this.userId)
@@ -37,8 +42,7 @@ Meteor.publish('ghRepos', function(){
   if (user){
     var
       ghs = user.services.github,
-      token = ghs && ghs.accessToken,
-      username = ghs && ghs.username
+      token = ghs && ghs.accessToken
     ;
 
     if (token) {
@@ -48,13 +52,14 @@ Meteor.publish('ghRepos', function(){
       });
     }
 
-    github.repositories.getFromUser({
-      user: username
+    github.repos.getFromOrg({
+      org: orgName
     }, function(err, data) {
       if (!err) {
-        _.each(data, function(org){
-          self.added("ghRepos", org.id, {
-            name: org.login,
+        console.dir(data);
+        _.each(data, function(repo){
+          self.added("ghRepos", repo.id, {
+            name: repo.name,
           });
         });
       }

@@ -10,6 +10,8 @@ var
 
 ghRL.prototype._activeRepo = new ReactiveVar();
 
+ghRL.prototype._selectedOrg = new ReactiveVar();
+
 ghRL.prototype._instances = [];
 
 ghRL.prototype.clearActiveRepo = function(){
@@ -38,6 +40,13 @@ ghRL.prototype.setActiveRepo = function(id){
   return false;
 };
 
+ghRL.prototype.setSelectedOrg = function(orgName){
+  console.log("Setting selected org to: " + orgName);
+  if (orgName) {
+    this._selectedOrg.set(orgName);
+  }
+};
+
 // Instantiation of the githubRepoList which exposes some current state
 // of the githubRepoList template
 githubRepoList = new ghRL();
@@ -51,7 +60,7 @@ Tracker.autorun(function () {
     sub.stop();
   }
   // Subscribe to the list of GitHub organizations
-  sub = Meteor.subscribe("ghRepos");
+  sub = Meteor.subscribe("ghRepos", githubRepoList._selectedOrg.get());
 });
 
 Template.githubRepoList.rendered = function(){
