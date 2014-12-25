@@ -24,12 +24,12 @@ ghOL.prototype.instances = function(){
   return this._instances;
 };
 
-ghOL.prototype.setActiveOrg = function(id){
-  check(id, Number);
+ghOL.prototype.setActiveOrg = function(orgObj){
+  check(orgObj, Object);
   // Checks if an organization with _id *id* exists
-  if (ghOrgs.findOne({_id: id})) {
+  if (ghOrgs.findOne({_id: orgObj._id})) {
     // Sets it as the active one
-    this._activeOrg.set(id);
+    this._activeOrg.set(orgObj);
     return true;
   }
 
@@ -75,7 +75,10 @@ Template.githubOrgList.helpers({
   },
   active: function(){
     // Returns 'active' in case this item corresponds to the active one
-    return githubOrgList.getActiveOrg() === this._id ? 'active' : undefined;
+    var activeOrg = githubOrgList.getActiveOrg();
+    if (activeOrg && activeOrg._id === this._id){
+      return 'active';
+    }
   },
   ready: function(){
     // Trick to make the call reactive tu current user changes...
@@ -89,6 +92,6 @@ Template.githubOrgList.helpers({
 Template.githubOrgList.events({
   'click .item': function(){
     // Changes the current active organization
-    githubOrgList.setActiveOrg(this._id);
+    githubOrgList.setActiveOrg(this);
   },
 });
