@@ -17,3 +17,8 @@ packaging:github-org-list
 
 
 packaging:github-repo-list
+meteorhacks:npm
+
+
+npm-container
+reactive-var

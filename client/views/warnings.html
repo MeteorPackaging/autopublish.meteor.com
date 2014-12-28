@@ -1,0 +1,16 @@
+<template name="warnings">
+  <i class="teal warning sign icon"></i>
+  <div class="ui wide popup">
+    <div class="ui attached warning icon message">
+      <i class="warning sign icon"></i>
+      <div class="content">
+        <div class="header">package.js file warnings:</div>
+        <ul class="ui bulleted list">
+          {{#each warnings}}
+            <li class="item">{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>

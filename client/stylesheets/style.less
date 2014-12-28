@@ -22,10 +22,17 @@ body {
 }
 
 #footer {
+  clear: both;
+  position: relative;
+  z-index: 10;
+  height: @footer-height;
+  //height: 3em;
+  margin-top: -3em;
+  /*
   position: absolute;
   bottom: 20px;
   width: 100%;
-  height: @footer-height;
+  */
   > .container {
     padding-right: 15px;
     padding-left: 15px;

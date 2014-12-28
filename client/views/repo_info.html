@@ -1,0 +1,37 @@
+<template name="repoInfo">
+  {{#if loading}}
+    <i class="spinner loading icon"></i>
+  {{else}}
+    {{#if error}}
+      <p>{{error}}</p>
+    {{else}}
+      <div class="item">
+        <div class="content">
+          {{!-- Header with package name and loading spinner --}}
+          <div class="header">
+            {{#if pkgUrl}}
+              <a href="{{pkgUrl}}" target="_blank">{{displayName}}</a>
+            {{else}}
+              {{displayName}}
+            {{/if}}
+            {{#if info.warnings}}
+              {{#with info}}
+                {{> warnings}}
+              {{/with}}
+            {{/if}}
+          </div>
+          {{!-- Toolbar or permissions warning --}}
+          {{#if admin}}
+            <div class="content">
+              <div class="right floated author">
+                {{> repoToggle}}
+              </div>
+            </div>
+          {{else}}
+            <p>Not enough permissions!</p>
+          {{/if}}
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
+</template>

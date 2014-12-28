@@ -2,10 +2,10 @@
 
 Template.navButton.helpers({
   icon: function() {
-    return Meteor.user() ? "" : "github square icon";
+    return Meteor.user() ? '' : 'github square icon';
   },
   text: function() {
-    return Meteor.user() ? "Sign out" : "Login with GitHub";
+    return Meteor.user() ? 'Sign out' : 'Login with GitHub';
   }
 });
 
@@ -17,10 +17,11 @@ Template.navButton.events({
     else {
       Meteor.loginWithGithub({
         requestPermissions: [
-          "user:email",
-          "repo:status",
-          "admin:repo_hook",
-          "read:org",
+          'user:email',
+          'repo',
+          'admin:repo_hook',
+          'read:org',
+          'admin:org_hook',
         ]
       });
     }
