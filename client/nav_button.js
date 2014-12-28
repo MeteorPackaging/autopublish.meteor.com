@@ -23,6 +23,10 @@ Template.navButton.events({
           'read:org',
           'admin:org_hook',
         ]
+      }, function(err){
+        if (!err) {
+          Router.go('accounts');
+        }
       });
     }
   },
