@@ -2,6 +2,9 @@
   <div class="ui fixed transparent inverted main menu">
     <div class="header item">Meteor Autopublish</div>
     <a class="{{isActiveRoute regex='home'}} item" href="{{pathFor 'home'}}">Home</a>
+    {{#if currentUser}}
+      <a class="{{isActiveRoute regex='accounts'}} item" href="{{pathFor 'accounts'}}">Accounts</a>
+    {{/if}}
     <div class="right menu">
       {{> navButton}}
     </div>
