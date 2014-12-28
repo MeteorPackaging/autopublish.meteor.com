@@ -21,24 +21,6 @@
 // }
 var ghOrgs = new Mongo.Collection('ghOrgs');
 
-// Handle for the subscription to current user's organizations
-var sub;
-
-Tracker.autorun(function () {
-  // Trick to make this function reactive and
-  // be executed again on current user changes...
-  Meteor.user();
-
-  // Possibly stops a previsous subscription
-  // This is needed to get a fresh new subscription with false readiness satus
-  // when a user logs in. Otherwise the 'sub.ready()' seems to stay true...
-  if (sub) {
-    sub.stop();
-  }
-
-  // Subscribe to the list of GitHub organizations for the current user
-  sub = Meteor.subscribe('ghOrgs');
-});
 
 /**
 * githubOrgList @class
@@ -89,6 +71,10 @@ ghOL.prototype.instances = function(){
 * Returns true in case of successful active organization update.
 */
 ghOL.prototype.setActiveOrg = function(orgObj){
+  if (!orgObj){
+    this._activeOrg.set(undefined);
+    return true;
+  }
   check(orgObj, Object);
 
   var user = Meteor.user();
@@ -118,6 +104,27 @@ ghOL.prototype.setActiveOrg = function(orgObj){
 githubOrgList = new ghOL();
 
 
+// Handle for the subscription to current user's organizations
+var sub;
+
+Tracker.autorun(function () {
+  // Possibly clears the active organization when the user logs out
+  if (!Meteor.user()){
+    githubOrgList.clearActiveOrg();
+  }
+
+  // Possibly stops a previous subscription
+  // This is needed to get a fresh new subscription with false readiness satus
+  // when a user logs in. Otherwise the 'sub.ready()' seems to stay true...
+  if (sub) {
+    sub.stop();
+  }
+
+  // Subscribe to the list of GitHub organizations for the current user
+  sub = Meteor.subscribe('ghOrgs');
+});
+
+
 
 Template.githubOrgList.rendered = function(){
   // Adds the current instance to the array of template instances
@@ -132,10 +139,9 @@ Template.githubOrgList.destroyed = function(){
   }
 };
 
-
 Template.githubOrgList.helpers({
   user: function(){
-    /** Provides the object representing the current logged in user. */
+    // Provides the object representing the current logged in user.
     var user = Meteor.user();
     if (user) {
       return {
@@ -162,7 +168,6 @@ Template.githubOrgList.helpers({
     // }
     return ghOrgs.find({}, {sort: {name: 1}, transform: function(org){
       org.type = 'org';
-      console.dir(org);
       return org;
     }});
   },
