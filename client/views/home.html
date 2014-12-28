@@ -1,10 +1,23 @@
 <template name="home">
-  <div class="ui page grid">
-    <div class="five wide column">
-      {{> githubOrgList}}
+  <div class="ui stackable two column page grid">
+    <div class="one column row">
+      <div class="column">
+        <h1 class="ui center aligned dividing header">
+          Autopublish for Meteor
+          <div class="sub header">
+            The portal to
+            <b>Automatic Package Publication!</b>
+          </div>
+        </h1>
+      </div>
     </div>
-    <div class="eleven wide column">
-      {{> githubRepoList}}
+    <div class="row">
+      <div class="column">
+        {{> items title="Completed Publish" selector=completed subscription="completedPublish"}}
+      </div>
+      <div class="column">
+        {{> items title="Queueing Publish" selector=queueing subscription="queueingPublish"}}
+      </div>
     </div>
   </div>
 </template>

@@ -13,3 +13,19 @@ Tracker.autorun(function () {
 
 
 githubRepoList.floatTmpl = 'repoInfo';
+
+
+Template.home.helpers({
+  queueing: function(){
+    // Returns the selector to be used to retrieve queueing publish operations
+    return {
+      completedAt: { $exists: false }
+    };
+  },
+  completed: function(){
+    // Returns the selector to be used to retrieve completed publish operations
+    return {
+      completedAt: { $exists: true }
+    };
+  },
+});
