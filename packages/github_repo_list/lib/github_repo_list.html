@@ -1,19 +1,37 @@
 <template name="githubRepoList">
   <div class="githubRepoList">
-    <div class="ui {{#unless ready}}loading{{/unless}} segment">
-      <h5 class="ui center aligned header">Repositories</h5>
-      <div class="ui divider"></div>
-      <div class="ui relaxed divided list">
-        {{#each orgs}}
-          <div class="{{active}} item">
-            <div class="content">
-              <a class="header">{{name}}</a>
-            </div>
-          </div>
-        {{else}}
-          No Repositories
-        {{/each}}
+    <h4 class="ui top attached center aligned header">
+      Repositories
+    </h4>
+    <div class="ui bottom attached segment">
+      <div class="ui {{#unless ready}}active{{/unless}} inverted dimmer">
+        <div class="ui text loader">Loading</div>
       </div>
+      <div class="ui relaxed divided list">
+        {{#if source}}
+          {{#each repos}}
+            <div class="{{active}} item">
+              {{#if floatTmpl}}
+                <div class="right floated basic segment">
+                  {{> UI.dynamic template=floatTmpl}}
+                </div>
+              {{/if}}
+              {{#if private}}
+                <i class="disabled lock icon"></i>
+              {{else}}
+                <i class="disabled unlock icon"></i>
+              {{/if}}
+              <div class="content">
+                <a class="header" href="{{html_url}}">{{full_name}}</a>
+              </div>
+            </div>
+          {{else}}
+            <p>No Repositories</p>
+          {{/each}}
+        {{else}}
+          <p>Please select a source for repositories</p>
+        {{/if}}
+        </div>
     </div>
   </div>
 </template>

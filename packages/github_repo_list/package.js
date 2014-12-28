@@ -30,7 +30,6 @@ Package.onUse(function(api) {
   ], 'client');
 
   api.addFiles([
-    'lib/github_repo_list.css',
     'lib/github_repo_list.html',
     'lib/github_repo_list.js'
   ], 'client');
