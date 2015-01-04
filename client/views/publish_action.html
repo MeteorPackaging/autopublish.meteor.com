@@ -1,0 +1,34 @@
+<template name="publishAction">
+{{!--
+{
+	createdAt: Date
+	publishedAt: Date
+	pkgName: String
+	tagName: String,
+	releaseName: String
+	releaseTargetCommittish: String
+	repoCloneUrl: String
+	status: String ('queueing, successful, errored')
+	error: String
+}
+--}}
+	<div class="item">
+		<div class="content">
+			<a href="{{atmosphereUrl}}" target="_blank" class="header">{{pkgName}}</a>
+			<div class="meta">
+				<span class="version">New Tag: {{tagName}}</span>
+			</div>
+			<div class="description">
+				{{releaseName}}
+			</div>
+			<div class="extra">
+				{{!--
+				<div class="ui right floated disabled red button">Sold Out</div>
+				<div class="ui horizontal label">IMAX</div>
+				<div class="ui horizontal label"><i class="globe icon"></i> Additional Languages</div>
+				--}}
+				<span class="right floated time">{{released}}</span>
+			</div>
+		</div>
+	</div>
+</template>
