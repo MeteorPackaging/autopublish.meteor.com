@@ -27,7 +27,11 @@
 				<div class="ui horizontal label">IMAX</div>
 				<div class="ui horizontal label"><i class="globe icon"></i> Additional Languages</div>
 				--}}
-				<span class="right floated time">{{released}}</span>
+				{{#if queueing}}
+					<span class="right floated time">{{released}}</span>
+				{{else}}
+					<span class="time">{{completed}}</span>
+				{{/if}}
 			</div>
 		</div>
 	</div>
