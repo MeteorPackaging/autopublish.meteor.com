@@ -1,0 +1,31 @@
+<template name="loadMoreList">
+	<div class="load more list">
+		<h4 class="ui top attached center aligned header">{{title}}</h4>
+		<div class="ui bottom attached segment">
+			<div class="ui divided items">
+				{{#each items}}
+					{{> UI.dynamic template=itemTmpl}}
+				{{else}}
+					{{#if isReady}}
+						<p>No Items</p>
+					{{/if}}
+				{{/each}}
+				{{#if isReady}}
+					{{#if hasMoreItems}}
+						<div class="item">
+							<div class="fluid ui primary button">Load more</div>
+						</div>
+					{{/if}}
+				{{else}}
+					<div class="item">
+						<div class="content">
+							<div class="ui center aligned basic fitted segment">
+								<div class="ui small active inline text loader">Loading</div>
+							</div>
+						</div>
+					</div>
+				{{/if}}
+			</div>
+		</div>
+	</div>
+</template>
