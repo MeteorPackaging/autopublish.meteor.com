@@ -1,0 +1,34 @@
+<template name="publishSubscription">
+{{!--
+      {
+        user: String
+        repo: String
+        repoId: String
+        hookId: String
+        hookEvents: [String]
+        pkgName: String
+				pkgVersion: String
+				pkgSummary: String
+        gitUrl: String
+      }
+--}}
+	<div class="item">
+		<div class="content">
+			<a href="{{atmosphereUrl}}" target="_blank" class="header">{{pkgName}}</a>
+			<div class="meta">
+				<span class="version">Latest Version: {{pkgVersion}}</span>
+			</div>
+			<div class="description">
+				{{pkgSummary}}
+			</div>
+			<div class="extra">
+				{{!--
+				<div class="ui right floated disabled red button">Sold Out</div>
+				<div class="ui horizontal label">IMAX</div>
+				<div class="ui horizontal label"><i class="globe icon"></i> Additional Languages</div>
+				--}}
+				<a href="{{gitUrl}}" target="_blank" class="right floated">View on GitHub</a>
+			</div>
+		</div>
+	</div>
+</template>
