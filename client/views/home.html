@@ -1,5 +1,5 @@
 <template name="home">
-  <div class="ui stackable two column page grid">
+  <div class="ui stackable three column page grid">
     <div class="one column row">
       <div class="column">
         <h1 class="ui center aligned dividing header">
@@ -13,10 +13,30 @@
     </div>
     <div class="row">
       <div class="column">
-        {{> items title="Completed Publish" selector=completed subscription="completedPublish"}}
+        {{> loadMoreList
+            title="Completed Publish"
+            itemTemplate="publishAction"
+            collection=AutoPublish
+            selector=completed
+            subscription="completedPublish"
+        }}
       </div>
       <div class="column">
-        {{> items title="Queueing Publish" selector=queueing subscription="queueingPublish"}}
+        {{> loadMoreList
+            title="Queueing Publish"
+            itemTemplate="publishAction"
+            collection=AutoPublish
+            selector=queueing
+            subscription="queueingPublish"
+        }}
+      </div>
+      <div class="column">
+        {{> loadMoreList
+            title="Subscriptions"
+            itemTemplate="publishSubscription"
+            collection=Subscriptions
+            subscription="subscriptions"
+        }}
       </div>
     </div>
   </div>
