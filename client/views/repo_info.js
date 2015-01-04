@@ -3,7 +3,13 @@
 Template.repoInfo.created = function(){
   var self = this;
   self.loading = new ReactiveVar(true);
-  Meteor.call('getRepoDetails', self.data.full_name, function(err, info){
+
+  console.dir(self.data);
+  Meteor.call('getRepoDetails', {
+    id: self.data._id,
+    fullName: self.data.full_name,
+    gitUrl: self.data.html_url
+  }, function(err, info){
     if (err) {
       self.data.error = err.error;
     }
