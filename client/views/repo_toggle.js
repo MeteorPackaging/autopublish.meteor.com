@@ -1,9 +1,16 @@
 'use strict';
 
 Template.repoToggle.rendered = function(){
-  this.$('.ui.checkbox')
-    .checkbox()
-  ;
+  if (this.data.info && this.data.info.enabled){
+    this.$('.ui.checkbox')
+      .checkbox('check')
+    ;
+  }
+  else {
+    this.$('.ui.checkbox')
+      .checkbox('uncheck')
+    ;
+  }
 };
 
 Template.repoToggle.created = function(){
@@ -19,11 +26,25 @@ Template.repoToggle.helpers({
 
 Template.repoToggle.events({
   'click .ui.checkbox': function(e, instance){
-    console.log("toggling web hook for:");
-    console.dir(this);
+    console.log("toggling web hook for: " + instance.data.full_name);
     instance.updating.set(true);
-    Meteor.call('toggleRepo', instance.data, function(err, result){
+    Meteor.call('toggleRepo', {
+      id: instance.data._id,
+      fullName: instance.data.full_name,
+      pkgName: instance.data.info.name,
+      pkgVersion: instance.data.info.version,
+      pkgSummary: instance.data.info.summary,
+      gitUrl: instance.data.html_url
+    }, function(err, result){
       instance.updating.set(false);
+      if (result.enabled !== undefined){
+        instance.data.enabled = result.enabled;
+        var status = 'uncheck';
+        if (result.enabled){
+          status = 'check';
+        }
+        instance.$('.ui.checkbox').checkbox(status);
+      }
     });
   },
 });
