@@ -17,7 +17,8 @@ Template.loadMoreList.created = function() {
     loadStep = data.step || 5,
     selector = data.selector || {},
     subsName = data.subscription,
-    itemTmpl = data.itemTemplate
+    itemTmpl = data.itemTemplate,
+    options = data.options
   ;
 
   // Initializes reactive variables
@@ -59,7 +60,7 @@ Template.loadMoreList.created = function() {
   // ---------
 
   instance.items = function() {
-    return collection.find(selector);
+    return collection.find(selector, options);
   };
 };
 
