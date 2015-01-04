@@ -14,28 +14,31 @@
     <div class="row">
       <div class="column">
         {{> loadMoreList
-            title="Completed Publish"
-            itemTemplate="publishAction"
-            collection=AutoPublish
-            selector=completed
-            subscription="completedPublish"
-        }}
-      </div>
-      <div class="column">
-        {{> loadMoreList
-            title="Queueing Publish"
-            itemTemplate="publishAction"
-            collection=AutoPublish
-            selector=queueing
-            subscription="queueingPublish"
-        }}
-      </div>
-      <div class="column">
-        {{> loadMoreList
-            title="Subscriptions"
-            itemTemplate="publishSubscription"
             collection=Subscriptions
+            itemTemplate="publishSubscription"
+            options=alpha
             subscription="subscriptions"
+            title="Subscriptions"
+        }}
+      </div>
+      <div class="column">
+        {{> loadMoreList
+            collection=AutoPublish
+            itemTemplate="publishAction"
+            options=newest
+            selector=completedSelector
+            subscription="completedPublish"
+            title="Completed Publish"
+        }}
+      </div>
+      <div class="column">
+        {{> loadMoreList
+            collection=AutoPublish
+            itemTemplate="publishAction"
+            options=oldest
+            selector=queueingSelector
+            subscription="queueingPublish"
+            title="Queueing Publish"
         }}
       </div>
     </div>
