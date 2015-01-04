@@ -22,3 +22,5 @@ meteorhacks:npm
 
 npm-container
 reactive-var
+momentjs:moment
+packaging:load-more-list
