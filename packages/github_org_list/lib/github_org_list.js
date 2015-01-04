@@ -32,7 +32,12 @@ var ghOL = function(){};
 * Reactive object referencing the currently selected organization item.
 * @private @var
 */
-ghOL.prototype._activeOrg = new ReactiveVar();
+ghOL.prototype._activeOrg = new ReactiveVar(undefined, function(oldVal, newVal){
+  if (!!oldVal && !!newVal && oldVal._id === newVal._id) {
+    return true;
+  }
+  return oldVal === newVal;
+});
 
 /**
 * Array of rendered template instances.
@@ -77,19 +82,13 @@ ghOL.prototype.setActiveOrg = function(orgObj){
   }
   check(orgObj, Object);
 
-  var user = Meteor.user();
+  var userId = Meteor.userId();
 
   // Checks if an organization with _id *id* exists
   // or if the provided object represents the user
-  if (ghOrgs.findOne({_id: orgObj._id}) || (user && user._id === orgObj._id)) {
-    var activeOrg = this._activeOrg.get();
-
-    // Checks it is not already the current one
-    // to prevent useless reactive re-computations
-    if (!activeOrg || activeOrg._id !== orgObj._id) {
-      // Sets it as the active one
-      this._activeOrg.set(orgObj);
-    }
+  if (ghOrgs.findOne({_id: orgObj._id}) || (userId && userId === orgObj._id)) {
+    // Sets it as the active one
+    this._activeOrg.set(_.clone(orgObj));
     return true;
   }
 
@@ -109,7 +108,7 @@ var sub;
 
 Tracker.autorun(function () {
   // Possibly clears the active organization when the user logs out
-  if (!Meteor.user()){
+  if (!Meteor.userId()){
     githubOrgList.clearActiveOrg();
   }
 

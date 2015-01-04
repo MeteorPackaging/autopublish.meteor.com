@@ -26,7 +26,12 @@ ghRL.prototype._activeRepo = new ReactiveVar();
 * source for repositories.
 * @private @var
 */
-ghRL.prototype._selectedOrg = new ReactiveVar();
+ghRL.prototype._selectedOrg = new ReactiveVar(undefined, function(oldVal, newVal){
+  if (!!oldVal && !!newVal && oldVal._id === newVal._id) {
+    return true;
+  }
+  return oldVal === newVal;
+});
 
 /**
 * Array of rendered template instances.
@@ -121,15 +126,8 @@ ghRL.prototype.setSelectedOrg = function(orgObj){
     return true;
   }
   check(orgObj, Object);
+  this._selectedOrg.set(_.clone(orgObj));
 
-  var selectedOrg = this._selectedOrg.get();
-
-  // Checks it is not already the current one
-  // to prevent useless reactive re-computations
-  if (!selectedOrg || selectedOrg._id !== orgObj._id) {
-    // Sets it as the selected one
-    this._selectedOrg.set(orgObj);
-  }
   return true;
 };
 
