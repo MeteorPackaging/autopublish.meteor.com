@@ -1,5 +1,5 @@
 'use strict';
-/* global github: false, Async: false, Buffer: false */
+/* global github: false, Async: false, Buffer: false, Subscriptions: false */
 
 
 /*
@@ -16,6 +16,9 @@ http://mikedeboer.github.io/node-github/#repos.prototype.getHooks
 http://mikedeboer.github.io/node-github/#repos.prototype.createHook
 https://developer.github.com/v3/repos/hooks/#create-a-hook
 */
+
+//var hookUrl = 'http://autopublish.meteor.com/publish';
+var hookUrl = 'http://2b233d0d.ngrok.com/publish';
 
 // Read the package.js file
 // This is a simplified version of the original one from @raix
@@ -38,7 +41,7 @@ var readPackagejs = function(packagejsSource) {
         ret.warnings.push('No name provided');
       }
       ret.version = obj.version;
-      //ret.summary = obj.summary;
+      ret.summary = obj.summary;
     };
 
     var addF = 0;
@@ -126,12 +129,10 @@ var readPackagejs = function(packagejsSource) {
 
 
 Meteor.methods({
-  getRepoDetails: function(repoFullName) {
+  getRepoDetails: function(repoInfo) {
     // Since this is not a blocking method, tells the next method calls can
     // start in a new fiber without waiting this one to complete
     this.unblock();
-
-    console.log("getRepoDetails " + repoFullName);
 
     var
       user = Meteor.users.findOne(this.userId),
@@ -140,7 +141,12 @@ Meteor.methods({
 
     // Full name must be in the form 'user/repoName' or 'org/repoName'
     // Splits user and repo name
-    repoFullName = repoFullName.split('/');
+    var
+      repoFullName = repoInfo.fullName.split('/'),
+      repoId = repoInfo.id,
+      gitUrl = repoInfo.gitUrl
+    ;
+    console.log("getRepoDetails " + repoFullName);
 
     if (token) {
       github.authenticate({
@@ -167,9 +173,71 @@ Meteor.methods({
       catch(err) {
         pkg.name = 'Probably a Meteor Package';
         pkg.version = '';
+        pkg.summary = '';
         pkg.warnings = ['We were unable to parse your package.js file!'];
       }
       finally {
+
+        console.log("Checking hooks...");
+        // Gets the list of hooks for the requested repository
+        var getHooks = Async.runSync(function(done) {
+          github.repos.getHooks({
+            user: repoFullName[0],
+            repo: repoFullName[1],
+          }, function(err, data) {
+            done(null, data);
+          });
+        });
+        if (getHooks.result) {
+          // Checks whether there's already (at least) one hook pointing to
+          // 'https://autopublish.meteor.com/publish'
+          var hooks = _
+          .chain(getHooks.result)
+          .filter(function(hook){
+            if (hook.name === 'web' && hook.config) {
+              return hook.config.url === hookUrl;
+            }
+          })
+          .value();
+          console.log("Hooks details:");
+          console.dir(hooks);
+
+          if (hooks.length > 0){
+            console.log("...hook found!");
+            pkg.hookId = hooks[0].id;
+            pkg.enabled = true;
+
+            // Updates the Subscription document
+            Subscriptions.update({
+              user: repoFullName[0],
+              repo: repoFullName[1],
+              repoId: repoId,
+            }, {$set: {
+              user: repoFullName[0],
+              repo: repoFullName[1],
+              repoId: repoId,
+              hookId: hooks[0].id,
+              hookEvents: hooks[0].events,
+              pkgName: pkg.name,
+              pkgVersion: pkg.version,
+              pkgSummary: pkg.summary,
+              gitUrl: gitUrl,
+            }}, {
+              upsert: true
+            });
+            console.log("Subscription created!");
+          }
+          else {
+            // Possibly removes old subscriptions
+            Subscriptions.remove({
+              user: repoFullName[0],
+              repo: repoFullName[1],
+              repoId: repoId,
+            });
+            console.log("Subscription removed!");
+          }
+        }
+
         if (pkg.name) {
           console.log("Package " + pkg.name);
         }
@@ -180,13 +248,146 @@ Meteor.methods({
       throw new Meteor.Error("Not a meteor package!");
     }
   },
-  toggleRepo: function(){
-    var sleep = function(time) {
-      var stop = new Date().getTime() + time;
-      while(new Date().getTime() < stop) {
-        ;
+  toggleRepo: function(repoInfo){
+    // Since this is not a blocking method, tells the next method calls can
+    // start in a new fiber without waiting this one to complete
+    this.unblock();
+
+    var
+      user = Meteor.users.findOne(this.userId),
+      ghs = user && user.services && user.services.github,
+      token = ghs && ghs.accessToken
+    ;
+
+    // Full name must be in the form 'user/repoName' or 'org/repoName'
+    // Splits user and repo name
+    var
+      repoFullName = repoInfo.fullName.split('/'),
+      repoId = repoInfo.id,
+      gitUrl = repoInfo.gitUrl,
+      pkgName = repoInfo.pkgName,
+      pkgVersion = repoInfo.pkgVersion,
+      pkgSummary = repoInfo.pkgSummary
+    ;
+    console.log("toggleRepo " + repoFullName);
+
+    if (token) {
+      github.authenticate({
+        type: "oauth",
+        token: token
+      });
+    }
+
+    // Array of possible errors to appear during toggle operations
+    var errs = [];
+    // Result object to return
+    var ret = {};
+
+    // Gets the list of hooks for the requested repository
+    var get = Async.runSync(function(done) {
+      github.repos.getHooks({
+        user: repoFullName[0],
+        repo: repoFullName[1],
+      }, function(err, data) {
+        done(null, data);
+      });
+    });
+    if (get.result) {
+      // Checks whether there's already (at least) one hook pointing to
+      // 'https://autopublish.meteor.com/publish'
+      var hooks = _
+        .chain(get.result)
+        .filter(function(hook){
+          if (hook.name === 'web' && hook.config) {
+            return hook.config.url === hookUrl;
+          }
+        })
+        .value();
+      console.log("Hooks details:");
+      console.dir(hooks);
+
+      if (hooks.length > 0){
+        // In case there is at least one...
+        // ...deletes 'all' existing hooks
+        _.each(hooks, function(hook){
+          console.log("Deleting hook " + hook.id);
+          var d = Async.runSync(function(done) {
+            github.repos.deleteHook({
+              user: repoFullName[0],
+              repo: repoFullName[1],
+              id: hook.id,
+            }, function(err, data) {
+              done(null, data);
+            });
+          });
+          if (!d.result){
+            errs.push(d.err);
+          }
+        });
+
+        // Possibly removes old subscriptions
+        Subscriptions.remove({
+          user: repoFullName[0],
+          repo: repoFullName[1],
+          repoId: repoId,
+        });
+        console.log("Subscription deleted!");
+
+        ret.enabled = false;
       }
-    };
-    sleep(500);
+      else {
+        // Otherwise creates a new hook
+        var d = Async.runSync(function(done) {
+          github.repos.createHook({
+            user: repoFullName[0],
+            repo: repoFullName[1],
+            name: 'web',
+            config: {
+              url: hookUrl,
+              content_type: "json",
+            },
+            events: ["release"],
+            active: true,
+          }, function(err, data) {
+            done(null, data);
+          });
+        });
+        if (!d.result){
+          errs.push(d.err);
+        }
+        else{
+          console.log("Hook created!");
+          console.dir(d.result);
+          ret.hookId = d.result.id;
+          ret.enabled = true;
+
+          // Adds the Subscription document
+          Subscriptions.update({
+            user: repoFullName[0],
+            repo: repoFullName[1],
+            repoId: repoId,
+          }, {$set: {
+            user: repoFullName[0],
+            repo: repoFullName[1],
+            repoId: repoId,
+            hookId: d.result.id,
+            hookEvents: d.result.events,
+            pkgName: pkgName,
+            pkgVersion: pkgVersion,
+            pkgSummary: pkgSummary,
+            gitUrl: gitUrl,
+          }}, {
+            upsert: true
+          });
+          console.log("Subscription created!");
+        }
+      }
+    }
+
+    // Possibly adds errors to the resutl object
+    if (errs.length > 0) {
+      ret.errs = errs;
+    }
+    return ret;
   }
 });
