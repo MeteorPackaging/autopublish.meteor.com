@@ -184,7 +184,6 @@ Meteor.methods({
       repoId = repoInfo.id,
       gitUrl = repoInfo.gitUrl
     ;
-    console.log("getRepoDetails " + repoFullName);
 
     if (token) {
       github.authenticate({
@@ -216,7 +215,6 @@ Meteor.methods({
       }
       finally {
 
-        console.log("Checking hooks...");
         // Gets the list of hooks for the requested repository
         var getHooks = Async.runSync(function(done) {
           github.repos.getHooks({
@@ -237,11 +235,8 @@ Meteor.methods({
             }
           })
           .value();
-          console.log("Hooks details:");
-          console.dir(hooks);
 
           if (hooks.length > 0){
-            console.log("...hook found!");
             pkg.hookId = hooks[0].id;
             pkg.enabled = true;
 
@@ -263,7 +258,6 @@ Meteor.methods({
             }}, {
               upsert: true
             });
-            console.log("Subscription created!");
           }
           else {
             // Possibly removes old subscriptions
@@ -272,14 +266,9 @@ Meteor.methods({
               repo: repoFullName[1],
               repoId: repoId,
             });
-            console.log("Subscription removed!");
           }
         }
 
-        if (pkg.name) {
-          console.log("Package " + pkg.name);
-        }
-        console.dir(pkg);
         return pkg;
       }
     } else {
@@ -307,7 +296,6 @@ Meteor.methods({
       pkgVersion = repoInfo.pkgVersion,
       pkgSummary = repoInfo.pkgSummary
     ;
-    console.log("toggleRepo " + repoFullName);
 
     if (token) {
       github.authenticate({
@@ -341,14 +329,11 @@ Meteor.methods({
           }
         })
         .value();
-      console.log("Hooks details:");
-      console.dir(hooks);
 
       if (hooks.length > 0){
         // In case there is at least one...
         // ...deletes 'all' existing hooks
         _.each(hooks, function(hook){
-          console.log("Deleting hook " + hook.id);
           var d = Async.runSync(function(done) {
             github.repos.deleteHook({
               user: repoFullName[0],
@@ -369,7 +354,6 @@ Meteor.methods({
           repo: repoFullName[1],
           repoId: repoId,
         });
-        console.log("Subscription deleted!");
 
         ret.enabled = false;
       }
@@ -394,8 +378,6 @@ Meteor.methods({
           errs.push(d.err);
         }
         else{
-          console.log("Hook created!");
-          console.dir(d.result);
           ret.hookId = d.result.id;
           ret.enabled = true;
 
@@ -417,7 +399,6 @@ Meteor.methods({
           }}, {
             upsert: true
           });
-          console.log("Subscription created!");
         }
       }
     }
