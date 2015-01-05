@@ -5,7 +5,7 @@ Template.warnings.rendered = function(){
     .popup({
       inline   : true,
       hoverable: true,
-      position : 'bottom left',
+      position : 'bottom right',
       delay: {
         show: 200,
         hide: 500
