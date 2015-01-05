@@ -1,5 +1,9 @@
 'use strict';
-/* global AutoPublish: false, queueingSelector: false */
+/* global
+    AutoPublish: false,
+    publishPackage: false,
+    queueingSelector: false
+*/
 
 var publishing = false;
 
@@ -15,29 +19,39 @@ var publishNextPackage = function(){
   // Picks up the next queueing package...
   var next = nextPkg();
 
-  // Publishes the next package until there is one...
-  while(!!next) {
-    console.log("Now publishing: " + next.pkgName);
-
-    // Fake publishing operation...
-    Meteor._sleepForMs(3000);
-
-    // Updates the queueing document and set is as completed
-    AutoPublish.update(next._id, {
-      $set: {
-        completedAt: new Date(),
-        status: 'successful',
+  if (next) {
+    var publishCallback = Meteor.bindEnvironment(function(err, result){
+      console.log("Done!");
+      if (err) {
+        console.log("Error:");
+        console.log(err);
       }
+      else {
+        console.log("Result:");
+        console.dir(result);
+
+        // Updates the queueing document and set is as completed
+        AutoPublish.update(next._id, {
+          $set: {
+            completedAt: new Date(),
+            status: 'successful',
+          }
+        });
+      }
+
+      // Goes to the next queueing package (in case it exists...)
+      publishNextPackage();
     });
 
-    // Picks up the next queueing package...
-    next = nextPkg();
+    // Starts publishing operations...
+    console.log("Now publishing: " + next.pkgName);
+    publishPackage(next, publishCallback);
   }
-
-  // Marks the end of publishing
-  publishing = false;
+  else {
+    // Marks the end of publishing
+    publishing = false;
+  }
 };
-
 
 // Marks the start of publishing
 publishing = true;
