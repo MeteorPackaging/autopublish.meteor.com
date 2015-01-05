@@ -34,14 +34,52 @@ var readPackagejs = function(packagejsSource) {
   var PackageApi = function() {
 
     var describe = function(obj) {
+      // Check name
       if (obj.name) {
+        if (obj.name !== obj.name.toLowerCase()) {
+          // Malformed name...
+          ret.warnings.push(
+            'Correct malformed name "' +
+            obj.name +
+            '" into "' +
+            obj.name.toLowerCase() +
+            '"'
+          );
+        }
         ret.name = obj.name;
       }
       else {
         ret.warnings.push('No name provided');
       }
+
+      // Check version
+      if (!obj.version) {
+        ret.warnings.push('Missing version');
+      }
       ret.version = obj.version;
+
+      // Check summary
+      if (!obj.summary) {
+        ret.warnings.push('Missing summary');
+      } else {
+        if (obj.summary.length > 100) {
+          ret.warnings.push(
+            'Summary too long: currently ' +
+            obj.summary.length +
+            ' chars > 100 allowed chars'
+          );
+        }
+      }
       ret.summary = obj.summary;
+
+      // Check git url...
+      if (!obj.git) {
+        ret.warnings.push('Missing git url');
+      } else {
+        if (!/.git$/.test(obj.git)) {
+          ret.warnings.push('Missing *.git in git url');
+        }
+      }
     };
 
     var addF = 0;
