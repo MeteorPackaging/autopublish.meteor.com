@@ -17,8 +17,7 @@ http://mikedeboer.github.io/node-github/#repos.prototype.createHook
 https://developer.github.com/v3/repos/hooks/#create-a-hook
 */
 
-//var hookUrl = 'http://autopublish.meteor.com/publish';
-var hookUrl = 'http://2b233d0d.ngrok.com/publish';
+var hookUrl = Meteor.settings.hookUrl;
 
 // Read the package.js file
 // This is a simplified version of the original one from @raix
@@ -368,7 +367,7 @@ Meteor.methods({
               url: hookUrl,
               content_type: "json",
             },
-            events: ["release"],
+            events: ["create", "release"],
             active: true,
           }, function(err, data) {
             done(null, data);
