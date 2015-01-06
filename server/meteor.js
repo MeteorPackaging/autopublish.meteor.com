@@ -39,17 +39,17 @@ var machine = function() {
         callback(err);
       } else {
         stream.on('data', function(data) {
-          console.log('STDOUT: ' + data);
+          //console.log('STDOUT: ' + data);
           result += data.toString();
         });
 
         stream.stderr.on('data', function(data) {
-          console.log('STDERR: ' + data);
+          //console.log('STDERR: ' + data);
           stderr += data.toString();
         });
 
         stream.on('error', function(err) {
-          console.log('error: ' + err);
+          //console.log('error: ' + err);
           callback(err, result, stderr);
         });
 
@@ -160,7 +160,8 @@ publishPackage = function(pkgInfo, callback) {
 
   var
     result = {
-      log: []
+      log: [],
+      errors: [],
     },
     gitClone =
       "git clone -b "+
@@ -187,11 +188,15 @@ publishPackage = function(pkgInfo, callback) {
     }
   })
   .exec('pwd && rm -rf autopublish', function(data) {
-    result.log.push(data);
+    if (data.length) {
+      result.log.push(data);
+    }
     console.log("- Cloning repository...");
   })
   .exec(gitClone, function(data) {
-    result.log.push(data);
+    if (data.length) {
+      result.log.push(data);
+    }
     console.log(
       '- Running publish ' +
       pkgInfo.pkgName +
@@ -224,14 +229,14 @@ publishPackage = function(pkgInfo, callback) {
     } else if (/Version already exists/.test(stderr)) {
       // Not published, version already existed!
       result.success = false;
-      result.error = "Version already exists";
+      result.errors.push("Version already exists");
     } else if (/There is no package named/.test(stderr)) {
       // Not published, first time publishing!
       // XXX: should trigger a `meteor publish --create` command
     } else if (!data && stderr) {
       // Not published, some other error!
       result.success = false;
-      result.error = stderr;
+      result.errors.push(stderr);
     }
 
     console.log("After Meteor Publish:");
@@ -240,7 +245,9 @@ publishPackage = function(pkgInfo, callback) {
     console.log("stderr:");
     console.log(stderr);
 
-    result.log.push(data);
+    if (data.length) {
+      result.log.push(data);
+    }
   })
   .exec('pwd && rm -rf autopublish', function() {
     console.log("Remote work done!");
@@ -249,8 +256,12 @@ publishPackage = function(pkgInfo, callback) {
   //   console.log('Progress:', index, cmd);
   // })
   .done(function(err) {
-    if (callback) {
-      callback(err, result);
+    if (!result.log.length){
+      delete result.log;
     }
+    if (!result.errors.length){
+      delete result.errors;
+    }
+    callback(err, result);
   });
 };

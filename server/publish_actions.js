@@ -31,11 +31,21 @@ var publishNextPackage = function(){
         console.dir(result);
 
         // Updates the queueing document and set is as completed
+        var setter = {
+          completedAt: new Date(),
+        };
+
+        if (result.success){
+          setter.status = 'successful';
+          setter.version = result.version;
+        }
+        else {
+          setter.status = 'errored';
+          setter.errors = result.errors;
+        }
+
         AutoPublish.update(next._id, {
-          $set: {
-            completedAt: new Date(),
-            status: 'successful',
-          }
+          $set: setter
         });
       }
 
