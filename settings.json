@@ -1,0 +1,9 @@
+{
+	"ghClientId": "XXXXXXXXXXXXXXXXXXXXX",
+	"ghSecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"hookUrl": "http://XXXXXXXXX.ngrok.com/publish",
+	"host": "XXX.XXX.XXX.XXX",
+	"username": "meteorpublish",
+	"password": "xxxxxxxxxxxxx",
+	"key": "-----BEGIN RSA PRIVATE KEY-----\nXXXXXXX\nXXXXXXX\n-----END RSA PRIVATE KEY-----"
+}
