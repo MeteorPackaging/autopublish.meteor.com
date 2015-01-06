@@ -3,7 +3,6 @@
 // General meteor integration
 
 var sshConnect = Meteor.npmRequire('ssh2-connect');
-var sshExec = Meteor.npmRequire('ssh2-exec');
 
 var machine = function() {
   'use strict';
@@ -31,7 +30,10 @@ var machine = function() {
 
   var runCommand = function(ssh, command, callback) {
     ssh.exec(command.cmd, command.options, function(err, stream) {
-      var result = '';
+      var
+        result = '',
+        stderr = ''
+      ;
 
       if (err) {
         callback(err);
@@ -41,14 +43,21 @@ var machine = function() {
           result += data.toString();
         });
 
+        stream.stderr.on('data', function(data) {
+          console.log('STDERR: ' + data);
+          stderr += data.toString();
+        });
+
         stream.on('error', function(err) {
-          callback(err);
+          console.log('error: ' + err);
+          callback(err, result, stderr);
         });
 
         stream.on('end', function() {
-          // Remove the trailing newline...
+          // Removes the trailing newline...
           result = result.replace(/\n$/, '');
-          callback(null, result);
+          stderr = stderr.replace(/\n$/, '');
+          callback(null, result, stderr);
         });
       }
     });
@@ -72,14 +81,14 @@ var machine = function() {
             // Update progress
             progressCallback(execHandlers.length, command.cmd);
             // Run the command
-            runCommand(ssh, command, function(err, result) {
+            runCommand(ssh, command, function(err, result, stderr) {
               if (err) {
                 // Run error callbacks
                 errorCallback(err);
               } else {
                 try {
                   // Run command callback
-                  command.f(result);
+                  command.f(result, stderr);
                   // Next command
                   next();
                 } catch(err) {
@@ -165,7 +174,7 @@ publishPackage = function(pkgInfo, callback) {
   // Grap version
   .exec('~/.meteor/meteor --version', function(version) {
     if (version) {
-      result.version = version;
+      result.meteorVersion = version;
     } else {
       throw new Error('Could not run remote meteor');
     }
@@ -187,12 +196,50 @@ publishPackage = function(pkgInfo, callback) {
       '- Running publish ' +
       pkgInfo.pkgName +
       ' on Meteor@' +
-      result.version +
+      result.meteorVersion +
       '...(please wait)'
     );
   })
-  .exec('cd autopublish && ~/.meteor/meteor publish', function(data) {
+  .exec('cd autopublish && ~/.meteor/meteor publish', function(data, stderr) {
     // XXX: Shold prop catch errors?
+    // data = 'Published packaging:autopublish-test@0.0.9.' after success
+    // stderr = '=> Errors while publishing:\n\nWhile creating package version:\nerror: Version already exists'
+    // after unsuccessful publish
+
+
+    /*
+    => Errors while publishing:
+
+    While publishing the package:
+    error: There is no package named packaging:autopublish-fake-test. If you are
+    creating a new package, use the --create flag.
+    */
+
+
+    if (/Published/.test(data)) {
+      // Successfully published!
+      var ver = data.split('@');
+      result.success = true;
+      result.version = ver[1].replace(/.$/, '');
+    } else if (/Version already exists/.test(stderr)) {
+      // Not published, version already existed!
+      result.success = false;
+      result.error = "Version already exists";
+    } else if (/There is no package named/.test(stderr)) {
+      // Not published, first time publishing!
+      // XXX: should trigger a `meteor publish --create` command
+    } else if (!data && stderr) {
+      // Not published, some other error!
+      result.success = false;
+      result.error = stderr;
+    }
+
+    console.log("After Meteor Publish:");
+    console.log("data:");
+    console.log(data);
+    console.log("stderr:");
+    console.log(stderr);
+
     result.log.push(data);
   })
   .exec('pwd && rm -rf autopublish', function() {
