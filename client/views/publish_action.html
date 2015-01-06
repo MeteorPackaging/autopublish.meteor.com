@@ -15,22 +15,43 @@
 	<div class="item">
 		<div class="content">
 			<a href="{{atmosphereUrl}}" target="_blank" class="header">{{pkgName}}</a>
-			<div class="meta">
-				<span class="version">New Tag: {{tagName}}</span>
-			</div>
-			<div class="description">
-				{{releaseName}}
-			</div>
+			{{#unless successful}}
+				<div class="description">
+					{{releaseName}}
+				</div>
+			{{/unless}}
+			{{#if queueing}}
+				<div class="meta">
+				</div>
+			{{/if}}
 			<div class="extra">
-				{{!--
-				<div class="ui right floated disabled red button">Sold Out</div>
-				<div class="ui horizontal label">IMAX</div>
-				<div class="ui horizontal label"><i class="globe icon"></i> Additional Languages</div>
-				--}}
 				{{#if queueing}}
-					<span class="right floated time">{{released}}</span>
+					<div class="ui right floated orange small tag label">
+						New Tag: {{tagName}}
+					</div>
+					<div class="ui small label time">{{released}}</div>
 				{{else}}
-					<span class="time">{{completed}}</span>
+					{{#if successful}}
+						<div class="ui right floated green small tag label">
+							Version {{version}}
+						</div>
+					{{else}}
+						<div class="ui right floated red small errored label">
+							<i class="warning sign icon"></i> Errored!
+						</div>
+						<div class="ui lean wide popup">
+							<div class="ui warning icon message">
+								<i class="warning sign icon"></i>
+								<div class="header">Errors:</div>
+								<ul class="list">
+									{{#each errors}}
+										<li>{{this}}</li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					{{/if}}
+					<div class="ui small label time">{{completed}}</div>
 				{{/if}}
 			</div>
 		</div>

@@ -18,6 +18,20 @@ Template.publishAction.created = function(){
 		instances.push(this);
 };
 
+Template.publishAction.rendered = function(){
+  this.$('div.errored.label')
+    .popup({
+      inline   : true,
+      hoverable: true,
+      position : 'bottom right',
+      delay: {
+        show: 200,
+        hide: 500
+      }
+    })
+  ;
+};
+
 Template.publishAction.destroyed = function(){
 	// Possibly removes the current instance from the array of template instances
 	var index = instances.indexOf(this);
@@ -58,4 +72,7 @@ Template.publishAction.helpers({
 		counter && counter.get();
 		return moment(this.publishedAt).fromNow();
 	},
+  successful: function(){
+    return this.status === 'successful';
+  },
 });
