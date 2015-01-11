@@ -40,15 +40,17 @@
 						<div class="ui right floated red small errored label">
 							<i class="warning sign icon"></i> Errored!
 						</div>
-						<div class="ui lean wide popup">
+						<div class="ui lean flowing popup">
 							<div class="ui warning icon message">
-								<i class="warning sign icon"></i>
-								<div class="header">Errors:</div>
-								<ul class="list">
-									{{#each errors}}
-										<li>{{this}}</li>
-									{{/each}}
-								</ul>
+								<i class="small warning sign icon"></i>
+								<div class="content">
+									<div class="header">Errors:</div>
+									<ul class="list">
+										{{#each errors}}
+											<li>{{this}}</li>
+										{{/each}}
+									</ul>
+								</div>
 							</div>
 						</div>
 					{{/if}}
