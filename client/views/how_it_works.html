@@ -1,0 +1,116 @@
+<template name="howItWorks">
+	<div class="ui stackable one column page grid">
+		<div class="row">
+			<div class="column">
+				<h3 class="ui dividing header">
+					<i class="film icon"></i>
+					<div class="content">
+						A Video...
+						<div class="sub header">...might be worth a million words!</div>
+					</div>
+				</h3>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="column">
+				<div class="ui basic fitted fluid segment">
+					<img class="ui centered rounded bordered image" src="/img/publish.png">
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="column">
+				<h1 class="ui center aligned dividing header">
+					Concise Summary for the Logic
+				</h1>
+			</div>
+		</div>
+
+		<div class="column">
+			<div class="ui top attached {{numSteps}} steps">
+				{{#each steps}}
+					<a class="{{active}} step">
+						<i class="{{icon}} icon"></i>
+						<div class="content">
+							<div class="title">{{title}}</div>
+							<div class="description">{{desc}}</div>
+						</div>
+					</a>
+				{{/each}}
+			</div>
+			<div class="ui bottom attached segment">
+				{{#if display 0}}
+					The hypothesis: every time a new release (or tag) for a Meteor package
+					repository on <a href="https://github.com/">Github</a> is available,
+					a new version should be published for it to reach out on the
+					<a href="https://atmospherejs.com/">Atmosphere</a>.
+				{{/if}}
+				{{#if display 1}}
+					As soon as GitHub detects a new tag, a
+					<a href="https://help.github.com/articles/about-webhooks/">web hook</a>
+					is triggered and an event is delivered to autopublish.meteor.com with
+					details about the repository which originated the process.
+				{{/if}}
+				{{#if display 2}}
+					Whenever a
+					<a href="https://developer.github.com/webhooks/#payloads">payload</a>
+					reaches autopublish.meteor.com (after the due checks for
+					correctness and against active subscriptions) a new publish action is
+					queued to be executed on a remote build machine.
+				{{/if}}
+				{{#if display 3}}
+					The publish sequence is quite simple: <i>git clone</i> the repository,
+					checkout specific tag, and eventually run
+					<i>
+						<a href="http://docs.meteor.com/#/full/meteorpublish">
+							meteor publish
+						</a>
+					</i> and clean up everything.
+				{{/if}}
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="column">
+				<div class="ui warning message">
+					<div class="header">
+						Meteor Developer User
+					</div>
+					<p>
+						Right now publishing operations are made using the <b>meteorpublish</b>
+						meteor user since it's not yet possible to use
+						<a href="https://www.meteor.com/services/developer-accounts">
+							Meteor Developer Accounts
+						</a>
+						OAuth flow to get the required permissions to execute a
+						<i>meteor login</i> on behalf of a different user.
+					</p>
+					<p>
+						So please make sure <i>meteorpublish</i> has the rights to publish
+						for you. Which means, for autopublish.meteor.com to work correctly,
+						<i>meteorpublish</i> must be part of the organization
+						publishing the package or, in case you're publishing under your
+						personal namespace, you must add <i>meteorpublish</i> among the
+						package maintainers with:
+					</p>
+					<p>
+						<i>meteor admin maintainers &lt;package name&gt; --add meteorpublish</i>
+					</p>
+					<p>
+						See
+						<i>
+							<a href="http://docs.meteor.com/#/full/meteoradmin">
+								meteor admin
+							</a>
+						</i>
+						or run <i>meteor help admin maintainers</i> from your shell to get
+						more information.
+					</p>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</template>
