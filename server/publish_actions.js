@@ -1,6 +1,7 @@
 'use strict';
 /* global
     AutoPublish: false,
+    oldestQueueing: false,
     publishPackage: false,
     queueingSelector: false
 */
@@ -8,11 +9,7 @@
 var publishing = false;
 
 var nextPkg = function(){
-  return AutoPublish.findOne(queueingSelector, {
-    sort: {
-      createdAt: 1,
-    }
-  });
+  return AutoPublish.findOne(queueingSelector, oldestQueueing);
 };
 
 var publishNextPackage = function(){
