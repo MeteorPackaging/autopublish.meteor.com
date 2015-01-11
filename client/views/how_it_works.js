@@ -31,6 +31,10 @@ Template.howItWorks.created = function(){
 	this.activeStep = new ReactiveVar(0);
 };
 
+Template.howItWorks.rendered = function(){
+	this.$('.ui.video').video();
+};
+
 Template.howItWorks.helpers({
 	active: function(){
 		if (this._id === Template.instance().activeStep.get()) {

@@ -2,26 +2,6 @@
 	<div class="ui stackable one column page grid">
 		<div class="row">
 			<div class="column">
-				<h3 class="ui dividing header">
-					<i class="film icon"></i>
-					<div class="content">
-						A Video...
-						<div class="sub header">...might be worth a million words!</div>
-					</div>
-				</h3>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="column">
-				<div class="ui basic fitted fluid segment">
-					<img class="ui centered rounded bordered image" src="/img/publish.png">
-				</div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="column">
 				<h1 class="ui center aligned dividing header">
 					Concise Summary for the Logic
 				</h1>
@@ -112,5 +92,31 @@
 			</div>
 		</div>
 
+		<div class="row">
+			<div class="column">
+				<h3 class="ui dividing header">
+					<i class="film icon"></i>
+					<div class="content">
+						A Video...
+						<div class="sub header">...might be worth a million words!</div>
+					</div>
+				</h3>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="column">
+				<div class="ui center aligned basic fitted fluid segment">
+					{{!--
+					<div class="ui video" data-source="ustream" data-url="videos/guide.mp4"></div>
+					--}}
+					<video controls autoplay>
+						<source src="/videos/guide.mp4" type="video/mp4">
+						Your browser does not support the video tag.
+					</video>
+			</div>
+		</div>
 	</div>
+
+</div>
 </template>
