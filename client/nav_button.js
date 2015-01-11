@@ -21,7 +21,6 @@ Template.navButton.events({
           'repo',
           'admin:repo_hook',
           'read:org',
-          'admin:org_hook',
         ]
       }, function(err){
         if (!err) {
