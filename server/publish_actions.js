@@ -21,18 +21,16 @@ var publishNextPackage = function(){
 
   if (next) {
     var publishCallback = Meteor.bindEnvironment(function(err, result){
-      console.log("Done!");
       if (err) {
-        console.log("Error:");
-        console.log(err);
+        AutoPublish.update(next._id, {
+          $unset: { publishing: ""}
+        });
       }
       else {
-        console.log("Result:");
-        console.dir(result);
-
         // Updates the queueing document and set is as completed
         var setter = {
           completedAt: new Date(),
+          log: result.log,
         };
 
         if (result.success){
@@ -45,7 +43,8 @@ var publishNextPackage = function(){
         }
 
         AutoPublish.update(next._id, {
-          $set: setter
+          $set: setter,
+          $unset: {publishing: ""}
         });
       }
 
@@ -54,7 +53,6 @@ var publishNextPackage = function(){
     });
 
     // Starts publishing operations...
-    console.log("Now publishing: " + next.pkgName);
     publishPackage(next, publishCallback);
   }
   else {
