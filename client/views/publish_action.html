@@ -20,12 +20,13 @@
 					{{releaseName}}
 				</div>
 			{{/unless}}
-			{{#if queueing}}
-				<div class="meta">
-				</div>
-			{{/if}}
 			<div class="extra">
 				{{#if queueing}}
+					{{#if publishing}}
+						<div class="ui active inverted dimmer">
+							<div class="ui mini inline text loader">{{publishing}}</div>
+						</div>
+					{{/if}}
 					<div class="ui right floated orange small tag label">
 						New Tag: {{tagName}}
 					</div>

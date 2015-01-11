@@ -59,11 +59,6 @@ Template.publishAction.helpers({
     counter && counter.get();
     return moment(this.completedAt).fromNow();
   },
-	created: function(){
-		// Trick to make this recomputing every minute...
-		counter && counter.get();
-		return moment(this.createdAt).fromNow();
-	},
   queueing: function(){
     return this.status === 'queueing';
   },
