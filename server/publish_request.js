@@ -1,10 +1,19 @@
 'use strict';
 
+/* global HookPayloads: false */
+
 Meteor.methods({
 	processPublishRequest: function(payload) {
 		console.log('Received publish request');
 		//console.log('Payload:');
 		//console.dir(payload);
+
+		// Stores the received payload as requests log...
+		var payloadDoc = {
+			receivedAt: new Date(),
+			payload: payload,
+		};
+		HookPayloads.insert(payloadDoc);
 
 		if (!payload.repository) {
 			throw new Meteor.Error(400, "Invalid Payload!");
