@@ -1,9 +1,22 @@
 {
+	"machine": {
+		"os.osx.x86_64": {
+			"host": "XXX.XXX.XXX.XXX",
+			"username": "meteorpublish",
+			"key": "-----BEGIN RSA PRIVATE KEY-----\nXXXXXXX\nXXXXXXX\n-----END RSA PRIVATE KEY-----"
+		},
+		"os.linux.x86_64": {
+			"host": "XXX.XXX.XXX.XXX",
+			"username": "meteorpublish",
+			"key": "-----BEGIN RSA PRIVATE KEY-----\nXXXXXXX\nXXXXXXX\n-----END RSA PRIVATE KEY-----"
+		},
+		"os.linux.x86_32": {
+			"host": "XXX.XXX.XXX.XXX",
+			"username": "meteorpublish",
+			"key": "-----BEGIN RSA PRIVATE KEY-----\nXXXXXXX\nXXXXXXX\n-----END RSA PRIVATE KEY-----"
+		}
+	},
 	"ghClientId": "XXXXXXXXXXXXXXXXXXXXX",
 	"ghSecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"hookUrl": "http://XXXXXXXXX.ngrok.com/publish",
-	"host": "XXX.XXX.XXX.XXX",
-	"username": "meteorpublish",
-	"password": "xxxxxxxxxxxxx",
-	"key": "-----BEGIN RSA PRIVATE KEY-----\nXXXXXXX\nXXXXXXX\n-----END RSA PRIVATE KEY-----"
+	"hookUrl": "http://XXXXXXXXX.ngrok.com/publish"
 }
