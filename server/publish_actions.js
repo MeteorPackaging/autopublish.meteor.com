@@ -20,7 +20,7 @@ var publishNextPackage = function(){
     var publishCallback = Meteor.bindEnvironment(function(err, result){
       if (err) {
         AutoPublish.update(next._id, {
-          $unset: { publishing: ""}
+          $unset: { publishing: 1}
         });
       }
       else {
@@ -41,7 +41,7 @@ var publishNextPackage = function(){
 
         AutoPublish.update(next._id, {
           $set: setter,
-          $unset: {publishing: ""}
+          $unset: {publishing: 1}
         });
       }
 
