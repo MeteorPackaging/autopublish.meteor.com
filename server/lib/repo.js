@@ -367,7 +367,11 @@ Meteor.methods({
               url: hookUrl,
               content_type: "json",
             },
-            events: ["create", "release"],
+            // XXX: TODO: It seems that with both "create" and "release"
+            //            we get to triggers...
+            //            Options needed to select which one to listen to!
+            //events: ["create", "release"],
+            events: ["create"],
             active: true,
           }, function(err, data) {
             done(null, data);
