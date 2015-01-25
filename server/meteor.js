@@ -165,24 +165,15 @@ var clearGitSessionText = function(sessionText){
 var clearMeteorSessionText = function(sessionText){
   'use strict';
   // Removes useless meteor publish output lines...
-  sessionText = sessionText.replace(/^   Preparing project.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Updating package catalog.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Initializing packages.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Selecting package versions.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Downloading missing packages.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Building local packages.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Preparing to build package.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Building package.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Publishing the package.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Bundling source.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Creating package version.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Uploading source.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Publishing package version.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Bundling build.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Creating package build.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Uploading build.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Publishing package build.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Creating package.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Building.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Creating.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Downloading.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Initializing.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Preparing.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Publishing.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Selecting.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Updating.*\r/gm, '');
+  sessionText = sessionText.replace(/^   Uploading.*\r/gm, '');
   sessionText = sessionText.replace(/^\s*[\\\|\/\-]\r/gm, '');
   sessionText = sessionText.replace(/^\s*\r/gm, '');
   return sessionText;
@@ -290,12 +281,7 @@ publishPackage = function(pkgInfo, callback) {
     response = clearMeteorSessionText(response);
     if (/Errors while publishing/.test(response)){
       // Some error occurred...
-      if (/Version already exists/.test(response)) {
-        // Not published, version already existed!
-        hostObj.result.success = false;
-        hostObj.errors.push("Version already exists");
-        this.endCommands();
-      } else if (/There is no package named/.test(response)) {
+      if (/There is no package named/.test(response)) {
         // Not published, first time publishing!
         // Triggers a `meteor publish --create` command
         var cmd = "~/.meteor/meteor publish --create";
@@ -305,6 +291,26 @@ publishPackage = function(pkgInfo, callback) {
           cmd: cmd,
           callback: afterPublishCallback
         });
+      }
+      else if (/Version already exists/.test(response)) {
+        // Not published, version already existed!
+        hostObj.result.success = false;
+        hostObj.errors.push("Version already exists");
+        this.endCommands();
+      }
+      else if (/Documentation not found/.test(response)) {
+        // Not published, Documentation not found!
+        hostObj.result.success = false;
+        hostObj.errors.push(
+          "Documentation not found! Check your *documentation* option inside " +
+          "Package.describe (defaults to README.md)");
+        this.endCommands();
+      }
+      else if (/Longform package description is too long/.test(response)) {
+        // Not published, description is too long!
+        hostObj.result.success = false;
+        hostObj.errors.push("First section too long inside README.m");
+        this.endCommands();
       }
       else {
         hostObj.result.success = false;
