@@ -3,7 +3,8 @@
     AutoPublish: false,
     oldestQueueing: false,
     publishPackage: false,
-    queueingSelector: false
+    queueingSelector: false,
+    Subscriptions: false
 */
 
 var publishing = false;
@@ -43,6 +44,17 @@ var publishNextPackage = function(){
           $set: setter,
           $unset: {publishing: 1}
         });
+
+        // Updates the subscription object to show the latest version
+        if (result.success) {
+          Subscriptions.update({
+            pkgName: next.pkgName
+          }, {
+            $set: {
+              pkgVersion: result.version
+            }
+          });
+        }
       }
 
       // Goes to the next queueing package (in case it exists...)
