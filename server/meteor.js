@@ -1,12 +1,21 @@
+'use strict';
 /* global publishPackage: true, AutoPublish: false */
 
 // General meteor integration
 
 var sshShell = Meteor.npmRequire('ssh2shell');
 
+var cleanCR = function(buffer) {
+  var tmp = buffer.replace(/\r.*\r/gm, "\r");
+  while (tmp !== buffer) {
+    buffer = tmp;
+    tmp = buffer.replace(/\r.*\r/gm, "\r");
+  }
+  return buffer;
+};
+
 //Host Object:
 var host = function(serverDetails, msgCallback){
-  'use strict';
 
   this.server = serverDetails;
   this.commands = [];
@@ -32,7 +41,6 @@ var host = function(serverDetails, msgCallback){
 };
 
 host.prototype.onCommandProcessing = function(cmd, response, hostObj, stream) {
-  'use strict';
   var self = this;
   _.each(this.commandProcessingActions, function(action){
     if (cmd === action.cmd){
@@ -44,8 +52,9 @@ host.prototype.onCommandProcessing = function(cmd, response, hostObj, stream) {
 host.prototype.onCommandComplete = function(cmd, response, hostObj) {
   //response is the full response from the command completed
   //hostObj is this object and gives access to the current set of commands
-  'use strict';
 
+  // Strips useless \r...\r parts...
+  response = cleanCR(response);
   // XXX: check the "\r\n" line break on different OS!
   var responses = response.split("\r\n");
 
@@ -74,8 +83,6 @@ host.prototype.onCommandComplete = function(cmd, response, hostObj) {
 host.prototype.onEnd = function(sessionText, hostObj) {
   //sessionText is the full text for this hosts session
 
-  'use strict';
-
   // Retrieves the prompt string
   var prmpt = hostObj.prompt;
   prmpt = prmpt.split('~');
@@ -84,8 +91,11 @@ host.prototype.onEnd = function(sessionText, hostObj) {
   prmpt[1] = prmpt[1].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   // Accepts everything from the initial prompt up to the $
   prmpt = prmpt[0] + '.*' + prmpt[1];
-  // Removes the prompt from sessionText
   var prmptRe = new RegExp(prmpt, "mg");
+
+  // Strips useless \r...\r parts from sessionText...
+  sessionText = cleanCR(sessionText);
+  // Removes the prompt from sessionText
   sessionText = sessionText.replace(prmptRe, "");
   // Removes "Connected to xxx.xxx.xxx.xxx" from sessionText
   sessionText = sessionText.replace(/Connected to [0-9.\n\r]*/g, "");
@@ -100,32 +110,26 @@ host.prototype.onEnd = function(sessionText, hostObj) {
 };
 
 host.prototype.addCommand = function(cmd){
-  'use strict';
   this.commands.push(cmd);
 };
 
 host.prototype.addCommandToFront = function(cmd){
-  'use strict';
   this.commands.unshift(cmd);
 };
 
 host.prototype.addProcessingAction = function(action){
-  'use strict';
   this.commandProcessingActions.push(action);
 };
 
 host.prototype.addCompleteAction = function(action){
-  'use strict';
   this.commandCompleteActions.push(action);
 };
 
 host.prototype.addEndAction = function(action){
-  'use strict';
   this.endActions.push(action);
 };
 
 host.prototype.endCommands = function(){
-  'use strict';
   while(this.commands.length > 0) {
     this.commands.pop();
   }
@@ -133,7 +137,6 @@ host.prototype.endCommands = function(){
 };
 
 host.prototype.run = function(endCallback){
-  'use strict';
   this.addCommand("exit");
   //Create a new instance
   var ssh = new sshShell(this);
@@ -142,7 +145,7 @@ host.prototype.run = function(endCallback){
   if (endCallback) {
     self.addEndAction(endCallback);
 
-    ssh.on("error", function onError(err, type, close, callback) {
+    ssh.on("error", function onError(err) {
       endCallback(err, self.sessionText, self);
     });
   }
@@ -153,8 +156,8 @@ host.prototype.run = function(endCallback){
   return ssh;
 };
 
+/*
 var clearGitSessionText = function(sessionText){
-  'use strict';
   // Removes useless git clone output lines...
   sessionText = sessionText.replace(/^remote: Compressing.*\r/gm, '');
   sessionText = sessionText.replace(/^Receiving objects.*\r/mg, '');
@@ -163,7 +166,6 @@ var clearGitSessionText = function(sessionText){
 };
 
 var clearMeteorSessionText = function(sessionText){
-  'use strict';
   // Removes useless meteor publish output lines...
   sessionText = sessionText.replace(/^   Building.*\r/gm, '');
   sessionText = sessionText.replace(/^   Creating.*\r/gm, '');
@@ -180,9 +182,9 @@ var clearMeteorSessionText = function(sessionText){
   sessionText = sessionText.replace(/^\s*\r/gm, '');
   return sessionText;
 };
+*/
 
 publishPackage = function(pkgInfo, callback) {
-  'use strict';
 
   var progress = {
     send: Meteor.bindEnvironment(function(msg){
@@ -280,7 +282,7 @@ publishPackage = function(pkgInfo, callback) {
   // Runs 'meteor publish'
   cmd = "~/.meteor/meteor publish";
   var afterPublishCallback = function(response, hostObj) {
-    response = clearMeteorSessionText(response);
+    //response = clearMeteorSessionText(response);
     if (/Errors while publishing/.test(response)){
       // Some error occurred...
       if (/There is no package named/.test(response)) {
@@ -348,9 +350,9 @@ publishPackage = function(pkgInfo, callback) {
   // Actually starts the command sequence
   machine.run(function(err, sessionText, hostObj){
     // Possibly cleans up the git output
-    sessionText = clearGitSessionText(sessionText);
+    //sessionText = clearGitSessionText(sessionText);
     // Possibly cleans up the meteor publish output
-    sessionText = clearMeteorSessionText(sessionText);
+    //sessionText = clearMeteorSessionText(sessionText);
 
     var result = hostObj.result;
     // Stores the sessionText as the sequence log
