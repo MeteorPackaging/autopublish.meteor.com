@@ -11,7 +11,7 @@
 
 Template.home.helpers({
   // Alphabetically sorted
-  alpha: {pkgName: 1},
+  alpha: {sort: {pkgName: 1}},
   // Returns the AutoPublish collection
   AutoPublish: AutoPublish,
   // Returns the selector to be used to retrieve completed publish operations
