@@ -52,6 +52,7 @@ Meteor.publish('subscriptions', function(limit){
   check(limit, Number);
   return Subscriptions.find({}, {
     limit: limit,
+    sort: {pkgName: 1},
     fields: {
       hookEvents: 0,
       hookId: 0,
