@@ -1,7 +1,7 @@
-'use strict';
-/* global publishPackage: true, AutoPublish: false */
-
-// General meteor integration
+/* global
+    publishPackage: true,
+    AutoPublish: false
+*/
 
 var sshShell = Meteor.npmRequire('ssh2shell');
 
@@ -156,33 +156,6 @@ host.prototype.run = function(endCallback){
   return ssh;
 };
 
-/*
-var clearGitSessionText = function(sessionText){
-  // Removes useless git clone output lines...
-  sessionText = sessionText.replace(/^remote: Compressing.*\r/gm, '');
-  sessionText = sessionText.replace(/^Receiving objects.*\r/mg, '');
-  sessionText = sessionText.replace(/^Resolving deltas.*\r/mg, '');
-  return sessionText;
-};
-
-var clearMeteorSessionText = function(sessionText){
-  // Removes useless meteor publish output lines...
-  sessionText = sessionText.replace(/^   Building.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Creating.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Downloading.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Initializing.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Loading.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Looking.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Preparing.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Publishing.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Selecting.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Updating.*\r/gm, '');
-  sessionText = sessionText.replace(/^   Uploading.*\r/gm, '');
-  sessionText = sessionText.replace(/^\s*[\\\|\/\-]\r/gm, '');
-  sessionText = sessionText.replace(/^\s*\r/gm, '');
-  return sessionText;
-};
-*/
 
 publishPackage = function(pkgInfo, callback) {
 
@@ -282,7 +255,6 @@ publishPackage = function(pkgInfo, callback) {
   // Runs 'meteor publish'
   cmd = "~/.meteor/meteor publish";
   var afterPublishCallback = function(response, hostObj) {
-    //response = clearMeteorSessionText(response);
     if (/Errors while publishing/.test(response)){
       // Some error occurred...
       if (/There is no package named/.test(response)) {
@@ -322,6 +294,12 @@ publishPackage = function(pkgInfo, callback) {
         this.endCommands();
       }
     }
+    /*
+    else if (/error:/.test(response)) {
+      hostObj.result.success = false;
+      hostObj.errors.push("Some error occurred");
+    }
+    */
     // Otherwise extracts
     else if (/Published/.test(response)) {
       // Successfully published!
