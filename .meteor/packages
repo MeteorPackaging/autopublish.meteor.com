@@ -9,7 +9,6 @@ iron:router
 
 
 accounts-github
-nooitaf:semantic-ui
 zimme:iron-router-active
 service-configuration
 less
@@ -24,3 +23,4 @@ npm-container
 reactive-var
 momentjs:moment
 packaging:load-more-list
+nooitaf:semantic-ui
