@@ -63,3 +63,95 @@ Meteor.publish('subscriptions', function(limit){
     }
   });
 });
+
+
+// server: publish the current size of a collection
+var statsCollectionName = "statistics";
+Meteor.publish(statsCollectionName, function () {
+  var
+    self = this,
+    initializing = true,
+    objId = "_stats",
+    subsCount = 0,
+    publishCounts = {
+      queueing: 0,
+      successful: 0,
+      errored: 0,
+    }
+  ;
+
+
+  // observeChanges only returns after the initial `added` callbacks
+  // have run. Until then, we don't want to send a lot of
+  // `self.changed()` messages - hence tracking the
+  // `initializing` state.
+  var subsHandle = Subscriptions.find().observeChanges({
+    added: function () {
+      subsCount++;
+      if (!initializing) {
+        self.changed(statsCollectionName, objId, {subsCount: subsCount});
+      }
+    },
+    removed: function () {
+      subsCount--;
+      self.changed(statsCollectionName, objId, {subsCount: subsCount});
+    }
+    // don't care about changed
+  });
+
+  var autopubHandle = AutoPublish.find().observe({
+    added: function (document) {
+      if (document.status) {
+        publishCounts[document.status]++;
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {
+            publishCounts: publishCounts
+          });
+        }
+      }
+    },
+    changed: function (newDocument, oldDocument) {
+      if (oldDocument.status !== newDocument.status){
+        if (oldDocument.status) {
+          publishCounts[oldDocument.status]--;
+        }
+        if (newDocument.status) {
+          publishCounts[newDocument.status]++;
+        }
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {
+            publishCounts: publishCounts
+          });
+        }
+      }
+    },
+    removed: function (oldDocument) {
+      if (oldDocument.status) {
+        publishCounts[document.status]--;
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {
+            publishCounts: publishCounts
+          });
+        }
+      }
+    }
+  });
+
+  // Instead, we'll send one `self.added()` message right after
+  // observeChanges has returned, and mark the subscription as
+  // ready.
+  initializing = false;
+  self.added(statsCollectionName, objId, {
+    subsCount: subsCount,
+    publishCounts: publishCounts
+  });
+  self.ready();
+
+  // Stop observing the cursor when client unsubs.
+  // Stopping a subscription automatically takes
+  // care of sending the client any removed messages.
+  self.onStop(function () {
+    subsHandle.stop();
+    autopubHandle.stop();
+  });
+});
