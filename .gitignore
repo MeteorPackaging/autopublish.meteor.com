@@ -1,2 +1,5 @@
 .meteor/local
 .meteor/meteorite
+settings_development.json
+settings_production.json
+
