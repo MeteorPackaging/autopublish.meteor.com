@@ -16,18 +16,23 @@ regularPublish = function(pkgInfo, callback) {
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
-      if (!err && getMachineResult.success) {
+      if (getMachineResult.success) {
+
         var progress = {
           send: Meteor.bindEnvironment(function(msg){
             // Possibly removes initial IP address of the build machie
             msg = msg.replace(/^[0-9.]*: /, "");
 
             // Updates the publish action object to show this last message
-            AutoPublish.update(pkgInfo._id, {
-              $set: {
-                publishing: msg
-              }
-            });
+            // ...but not the last one which usually comes too late when the
+            // connection is actually closed!
+            if (msg !== "Completed") {
+              AutoPublish.update(pkgInfo._id, {
+                $set: {
+                  publishing: msg
+                }
+              });
+            }
           })
         };
 
@@ -93,7 +98,12 @@ regularPublish = function(pkgInfo, callback) {
           // Stores the sessionText as the sequence log
           result.log = sessionText;
 
-          if (hostObj.errors.length > 0){
+          if (err) {
+            result.success = false;
+            result.errors = [JSON.stringify(err)];
+          }
+          else if (hostObj.errors.length > 0){
+            result.success = false;
             result.errors = hostObj.errors;
           }
           else {
@@ -101,11 +111,11 @@ regularPublish = function(pkgInfo, callback) {
           }
 
           // Eventually calls the final callback
-          callback(null, result);
+          callback(result);
         });
       }
       else {
-        callback(err, getMachineResult);
+        callback(getMachineResult);
       }
     })
   );

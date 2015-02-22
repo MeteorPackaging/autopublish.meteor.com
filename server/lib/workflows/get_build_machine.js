@@ -14,11 +14,15 @@ getBuildMachine = function(architecture, pkgInfo, userCredentials, callback) {
       msg = msg.replace(/^[0-9.]*: /, "");
 
       // Updates the publish action object to show this last message
-      AutoPublish.update(pkgInfo._id, {
-        $set: {
-          publishing: msg
-        }
-      });
+      // ...but not the last one which usually comes too late when the
+      // connection is actually closed!
+      if (msg !== "Completed") {
+        AutoPublish.update(pkgInfo._id, {
+          $set: {
+            publishing: msg
+          }
+        });
+      }
     })
   };
 
@@ -36,9 +40,6 @@ getBuildMachine = function(architecture, pkgInfo, userCredentials, callback) {
   actions.loginMeteorUser(machine, userCredentials);
   actions.getBuildMachine(machine, architecture);
 
-  // Everything done!
-  machine.addCommand('msg:Done!');
-
   // Actually starts the command sequence
   machine.run(function(err, sessionText, hostObj){
 
@@ -46,7 +47,12 @@ getBuildMachine = function(architecture, pkgInfo, userCredentials, callback) {
     // Stores the sessionText as the sequence log
     result.log = sessionText;
 
-    if (hostObj.errors.length > 0){
+    if (err) {
+      result.success = false;
+      result.errors = [JSON.stringify(err)];
+    }
+    else if (hostObj.errors.length > 0){
+      result.success = false;
       result.errors = hostObj.errors;
     }
     else {

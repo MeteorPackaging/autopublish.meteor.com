@@ -170,9 +170,11 @@ Host.prototype.run = function(endCallback){
     self.addEndAction(endCallback);
 
     ssh.on("error", function onError(err) {
-      console.log("SSH2SHELL ERROR!!!");
-      console.dir(err);
-      endCallback(err, self.sessionText, self);
+      if (self.verbose) {
+        console.log("SSH2SHELL ERROR!!!");
+        console.dir(err);
+      }
+      endCallback(err, self.sessionText);
     });
   }
 

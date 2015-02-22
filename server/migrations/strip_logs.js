@@ -14,7 +14,7 @@ var cleanCR = function(buffer) {
 
 AutoPublish.find().forEach(function(action){
   var oldLog = action.log;
-  if (oldLog) {
+  if (oldLog && typeof oldLog === "string") {
     console.dir(
       "Stripping old log about " +
       action.pkgName +

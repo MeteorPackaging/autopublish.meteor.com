@@ -7,7 +7,7 @@
     Subscriptions: false
 */
 
-var publishing = false;
+var isPublishing = false;
 
 var nextPkg = function(){
   return AutoPublish.findOne(queueingSelector, oldestQueueing);
@@ -18,46 +18,33 @@ var publishNextPackage = function(){
   var next = nextPkg();
 
   if (next) {
-    var publishCallback = Meteor.bindEnvironment(function(err, result){
-      if (err) {
-        AutoPublish.update(next._id, {
-          $unset: { publishing: 1}
-        });
+    var publishCallback = Meteor.bindEnvironment(function(result){
+      // Updates the queueing document and set is as completed
+      var setter = {
+        completedAt: new Date(),
+        log: result.log,
+      };
+
+      if (result.success) {
+        setter.status = 'successful';
+        setter.version = result.version;
       }
       else {
-        // Updates the queueing document and set is as completed
-        var setter = {
-          completedAt: new Date(),
-          log: result.log,
-        };
+        setter.status = 'errored';
+        setter.errors = result.errors;
+      }
 
-        if (result.success){
-          setter.status = 'successful';
-          setter.version = result.version;
-        }
-        else {
-          setter.status = 'errored';
-          setter.errors = result.errors;
-        }
+      AutoPublish.update(next._id, {$set: setter, $unset: {publishing: 1}});
 
-        AutoPublish.update(next._id, {
-          $unset: {publishing: 1}
+      // Updates the subscription object to show the latest version
+      if (result.success) {
+        Subscriptions.update({
+          pkgName: next.pkgName
+        }, {
+          $set: {
+            pkgVersion: result.version
+          }
         });
-
-        AutoPublish.update(next._id, {
-          $set: setter,
-        });
-
-        // Updates the subscription object to show the latest version
-        if (result.success) {
-          Subscriptions.update({
-            pkgName: next.pkgName
-          }, {
-            $set: {
-              pkgVersion: result.version
-            }
-          });
-        }
       }
 
       // Goes to the next queueing package (in case it exists...)
@@ -69,12 +56,12 @@ var publishNextPackage = function(){
   }
   else {
     // Marks the end of publishing
-    publishing = false;
+    isPublishing = false;
   }
 };
 
 // Marks the start of publishing
-publishing = true;
+isPublishing = true;
 // Possibly publishes queueing packages on start-up
 publishNextPackage();
 
@@ -86,10 +73,9 @@ AutoPublish.find(queueingSelector, {
 }).observeChanges({
   added: function () {
     // Start Publishing new queueing packages if not already started...
-    if (!publishing) {
+    if (!isPublishing) {
       // Marks the start of publishing
-      publishing = true;
-
+      isPublishing = true;
       // Starts publishing operations right after returning from this callback
       Meteor.defer(publishNextPackage);
     }

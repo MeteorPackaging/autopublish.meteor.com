@@ -23,8 +23,10 @@ actions.checkMeteorUser = function(machine, username) {
   machine.addCompleteAction({
     cmd: cmd,
     callback: function(response, hostObj) {
-      console.log("checkMeteorUser:");
-      console.dir(username);
+      if (hostObj.verbose) {
+        console.log("checkMeteorUser:");
+        console.dir(username);
+      }
       if (response === username) {
         hostObj.result.username = username;
         machine.addCommandToFront('msg:Logged in as ' + username);
@@ -65,7 +67,7 @@ actions.getBuildMachine = function(machine, architecture) {
   // * https://www.meteor.com/services/build
 
   var cmd = 'meteor admin get-machine ' + architecture + ' --json';
-  machine.addCommand('msg:Getting BUild Machine for ' + architecture + '...');
+  machine.addCommand('msg:Getting Build Machine for ' + architecture + '...');
   machine.addCommand(cmd);
   machine.addCompleteAction({
     cmd: cmd,
@@ -148,18 +150,6 @@ actions.loginMeteorUser = function(machine, credentials) {
           }
         }
       }
-    }
-  });
-  machine.addCompleteAction({
-    cmd: cmd,
-    callback: function(response, hostObj) {
-      /*
-      if (loginFailed) {
-        hostObj.result.success = false;
-        hostObj.errors.push("Failed to login user " + credentials.userName);
-        this.endCommands();
-      }
-      */
     }
   });
 };
