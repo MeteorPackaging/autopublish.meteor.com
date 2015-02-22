@@ -2,7 +2,7 @@
 /* global
     AutoPublish: false,
     oldestQueueing: false,
-    publishPackage: false,
+    regularPublish: false,
     queueingSelector: false,
     Subscriptions: false
 */
@@ -41,8 +41,11 @@ var publishNextPackage = function(){
         }
 
         AutoPublish.update(next._id, {
-          $set: setter,
           $unset: {publishing: 1}
+        });
+
+        AutoPublish.update(next._id, {
+          $set: setter,
         });
 
         // Updates the subscription object to show the latest version
@@ -62,7 +65,7 @@ var publishNextPackage = function(){
     });
 
     // Starts publishing operations...
-    publishPackage(next, publishCallback);
+    regularPublish(next, publishCallback);
   }
   else {
     // Marks the end of publishing
