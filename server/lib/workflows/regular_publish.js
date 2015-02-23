@@ -58,8 +58,11 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.addCommand(cmd);
 
         // Clones the repository and checks out the latest release
-        actions.cloneRepositoryAtTag(buildMachine, pkgInfo, "autopublish");
+        // FIXME: does not work on git 1.7
+        //actions.cloneRepositoryAtTag(buildMachine, pkgInfo, "autopublish");
 
+        // Clones the repository and checks out the latest release
+        actions.cloneRepository(buildMachine, pkgInfo, "autopublish");
 
         // Moves into the cloned repo
         cmd = 'cd autopublish';
@@ -72,19 +75,17 @@ regularPublish = function(pkgInfo, callback) {
               hostObj.errors.push('Unable to clone the repository');
               this.endCommands();
             }
-            else {
-              this.addCommandToFront('msg:' +
-                'Running publish ' +
-                pkgInfo.pkgName +
-                ' on Meteor ' +
-                hostObj.result.meteorVersion +
-                '...'
-              );
-            }
           }
         });
 
+        // Checks out the latest release
+        buildMachine.addCommand('msg:Done!');
+        actions.checkoutTag(buildMachine, pkgInfo);
+
         // Runs 'meteor publish'
+        buildMachine.addCommand(
+          'msg:Running publish for ' + pkgInfo.pkgName + '...'
+        );
         actions.meteorPublish(buildMachine);
 
 

@@ -3,6 +3,7 @@
     AutoPublish: false
 */
 
+/*
 var cleanCR = function(buffer) {
   var tmp = buffer.replace(/\r.*\r/gm, "\r");
   while (tmp !== buffer) {
@@ -11,6 +12,7 @@ var cleanCR = function(buffer) {
   }
   return buffer;
 };
+
 
 AutoPublish.find().forEach(function(action){
   var oldLog = action.log;
@@ -25,3 +27,4 @@ AutoPublish.find().forEach(function(action){
     AutoPublish.update(action._id, {$set: {log: newLog}});
   }
 });
+*/

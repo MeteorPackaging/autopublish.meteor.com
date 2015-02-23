@@ -3,12 +3,25 @@
 */
 'use strict';
 
+
+actions.checkoutTag = function(machine, repoInfo){
+  var cmd = "git checkout " + repoInfo.tagName;
+  machine.addCommand('msg:Checking out ' + repoInfo.tagName + '...');
+  machine.addCommand(cmd);
+};
+
+
+actions.cloneRepository = function(machine, repoInfo, destinationFolder){
+  var cmd = "git clone " + repoInfo.repoCloneUrl + " " + destinationFolder;
+  machine.addCommand('msg:Cloning Repository...');
+  machine.addCommand(cmd);
+};
+
+
 actions.cloneRepositoryAtTag = function(machine, repoInfo, destinationFolder){
-  // Clones the repository
   var cmd =
-    "git clone -b " + repoInfo.tagName + " " +
-    repoInfo.repoCloneUrl + " " +
-    destinationFolder
+    "git clone --branch " + repoInfo.tagName + " --depth 1 " +
+    repoInfo.repoCloneUrl + " " +  destinationFolder
   ;
   machine.addCommand('msg:Cloning Repository at ' + repoInfo.tagName + '...');
   machine.addCommand(cmd);
