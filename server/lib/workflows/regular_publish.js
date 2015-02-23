@@ -11,12 +11,15 @@
 regularPublish = function(pkgInfo, callback) {
 
   var userCredentials = Meteor.settings.defaultMeteorUser;
+
+  /*
   getBuildMachine(
     "os.linux.x86_64",
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
       if (getMachineResult.success) {
+  */
 
         var progress = {
           send: Meteor.bindEnvironment(function(msg){
@@ -40,7 +43,8 @@ regularPublish = function(pkgInfo, callback) {
         // XXX: this should be transformed into a cycle to get machines
         //      for all three architectures when it is the case.
         var buildMachine = new Host(
-          getMachineResult.machineInfo,
+          //getMachineResult.machineInfo,
+          Meteor.settings.supportMachine,
           progress
         );
         buildMachine.connectedMessage = "Connected to remote Build Machine";
@@ -58,7 +62,7 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.addCommand(cmd);
 
         // Clones the repository and checks out the latest release
-        // FIXME: does not work on git 1.7
+        // FIXME: does not work on git 1.7 (i.e. on meteor build machines...)
         //actions.cloneRepositoryAtTag(buildMachine, pkgInfo, "autopublish");
 
         // Clones the repository and checks out the latest release
@@ -114,10 +118,12 @@ regularPublish = function(pkgInfo, callback) {
           // Eventually calls the final callback
           callback(result);
         });
+  /*
       }
       else {
         callback(getMachineResult);
       }
     })
   );
+  */
 };
