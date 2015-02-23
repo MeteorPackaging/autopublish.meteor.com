@@ -26,7 +26,6 @@ Template.repoToggle.helpers({
 
 Template.repoToggle.events({
   'click .ui.checkbox': function(e, instance){
-    console.log("toggling web hook for: " + instance.data.full_name);
     instance.updating.set(true);
     Meteor.call('toggleRepo', {
       id: instance.data._id,

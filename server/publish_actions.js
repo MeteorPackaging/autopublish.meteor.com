@@ -18,6 +18,7 @@ var publishNextPackage = function(){
   var next = nextPkg();
 
   if (next) {
+
     var publishCallback = Meteor.bindEnvironment(function(result){
       // Updates the queueing document and set is as completed
       var setter = {

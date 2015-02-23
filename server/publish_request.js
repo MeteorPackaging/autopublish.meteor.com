@@ -112,12 +112,14 @@ Meteor.methods({
 			//
 			// {
 			//   createdAt: Date
+			//   publishedAt: Date
 			//   completedAt: Date
-			//   packageName: String
+			//   pkgName: String
+			//   tagName: String
 			//   version: String
 			//   arch: String
 			//   status: String ('queueing, successful, errored')
-			//  error: String
+			//   errors: [String]
 			// }
 			AutoPublish.insert({
 				createdAt: now,

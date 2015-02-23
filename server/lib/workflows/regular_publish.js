@@ -90,7 +90,7 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.addCommand(
           'msg:Running publish for ' + pkgInfo.pkgName + '...'
         );
-        actions.meteorPublish(buildMachine);
+        actions.meteorPublish(buildMachine, pkgInfo);
 
 
         // Everything done!

@@ -72,7 +72,9 @@ Host.prototype.onCommandComplete = function(cmd, response, hostObj) {
   //hostObj is this object and gives access to the current set of commands
 
   // Strips useless \r...\r parts...
-  response = this.cleanCR(response);
+  // FIXME: it seems this creates problems while trying to detect final
+  //        commands' outcome: sometimes also the last line is stripped out :(
+  // response = this.cleanCR(response);
 
   // XXX: check the "\r\n" line break on different OS!
   var responses = response.split("\r\n");
@@ -101,7 +103,9 @@ Host.prototype.onCommandComplete = function(cmd, response, hostObj) {
 
 Host.prototype.onCommandProcessing = function(cmd, response, hostObj, stream) {
   // Strips useless \r...\r parts...
-  response = this.cleanCR(response);
+  // FIXME: it seems this creates problems while trying to detect final
+  //        commands' outcome: sometimes also the last line is stripped out :(
+  // response = this.cleanCR(response);
 
   // XXX: check the "\r\n" line break on different OS!
   var responses = response.split("\r\n");
@@ -139,8 +143,11 @@ Host.prototype.onEnd = function(sessionText, hostObj) {
   prmpt = prmpt[0] + '.*' + prmpt[1];
   var prmptRe = new RegExp(prmpt, "mg");
 
-  // Strips useless \r...\r parts from sessionText...
-  sessionText = this.cleanCR(sessionText);
+  // Strips useless \r...\r parts...
+  // FIXME: it seems this creates problems while trying to detect final
+  //        commands' outcome: sometimes also the last line is stripped out :(
+  // response = this.cleanCR(response);
+
   // Removes the prompt from sessionText
   sessionText = sessionText.replace(prmptRe, "");
   // Removes "Connected to xxx.xxx.xxx.xxx" from sessionText
@@ -174,7 +181,7 @@ Host.prototype.run = function(endCallback){
         console.log("SSH2SHELL ERROR!!!");
         console.dir(err);
       }
-      endCallback(err, self.sessionText);
+      endCallback(err, self.sessionText, self);
     });
   }
 

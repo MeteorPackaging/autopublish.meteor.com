@@ -1,5 +1,3 @@
-'user strict';
-
 var GithubApi = Meteor.npmRequire('github');
 
 github = new GithubApi({

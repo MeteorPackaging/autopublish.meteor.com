@@ -176,12 +176,16 @@ actions.logoutMeteorUser = function(machine) {
 };
 
 
-actions.meteorPublish = function(machine) {
+actions.meteorPublish = function(machine, pkgInfo) {
   // Runs 'meteor publish'
 
   var cmd = "~/.meteor/meteor publish";
 
   var afterPublishCallback = function(response, hostObj) {
+    if (machine.verbose) {
+      console.log("meteorPublish:");
+      console.dir(response);
+    }
     if (/There is no package named/gi.test(response)) {
       // Not published, first time publishing!
       // Triggers a `meteor publish --create` command
@@ -216,18 +220,21 @@ actions.meteorPublish = function(machine) {
       this.endCommands();
     }
     // Otherwise extracts publish information
-    else if (/Published/.test(response)) {
-      // Successfully published!
-      hostObj.result.success = true;
-
-      // Gets the published version
-      var ver = response.split('@');
-      hostObj.result.version = ver[1].replace(/.$/, '');
-    }
+    // else if (/Published/gi.test(response)) {
     else {
-      hostObj.result.success = false;
-      hostObj.errors.push("Some error occurred");
-      this.endCommands();
+      var re = RegExp(".*Published " + pkgInfo.pkgName + "@(.*).", "gi");
+      var match = re.exec(response);
+      if (match) {
+        // Successfully published!
+        hostObj.result.success = true;
+        // Gets the published version
+        hostObj.result.version = match[1];
+      }
+      else {
+        hostObj.result.success = false;
+        hostObj.errors.push("Some error occurred :(");
+        this.endCommands();
+      }
     }
   };
   machine.addCommand(cmd);
