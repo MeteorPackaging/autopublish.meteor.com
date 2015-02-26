@@ -18,9 +18,7 @@ Template.navButton.events({
       Meteor.loginWithGithub({
         requestPermissions: [
           'user:email',
-          'public_repo',
           'admin:repo_hook',
-          'read:org',
         ]
       }, function(err){
         if (!err) {
