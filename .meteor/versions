@@ -46,7 +46,6 @@ minimongo@1.0.6
 mobile-status-bar@1.0.2
 momentjs:moment@2.9.0
 mongo@1.0.11
-nooitaf:semantic-ui@1.9.2
 npm-container@1.0.0
 oauth@1.1.3
 oauth2@1.1.2
@@ -61,6 +60,7 @@ reactive-var@1.0.4
 reload@1.1.2
 retry@1.0.2
 routepolicy@1.0.4
+semantic:ui-css@1.10.2_1
 service-configuration@1.0.3
 session@1.0.5
 spacebars@1.0.5
