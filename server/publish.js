@@ -180,10 +180,12 @@ Meteor.publish(statsCollectionName, function () {
 
 SearchSource.defineSource('knownhooks', function(searchText, options) {
 
+  /*
   console.log("Getting data from source knownhooks");
   console.log("userId: " + this.userId);
   console.log("searchText: ");
   console.dir(searchText);
+  */
 
   // Checks the user is an admin
   if (Roles.userIsInRole(this.userId, ['admin'])) {
