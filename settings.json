@@ -8,6 +8,17 @@
     "userName": "xxxxxxx",
     "pwd": "xxxxxxxxxxxxxxxxxxxxx"
   },
+	"defaultGitHubUser": {
+    "userName": "xxxxxxx",
+    "pwd": "xxxxxxxxxxxxxxxxxxxxx"
+	},
+	"issues": {
+		"newHook": {
+			"user": "MeteorPackaging",
+      "repo": "autopublish.meteor.com",
+			"number": 10
+		}
+	},
   "ghClientId": "XXXXXXXXXXXXXXXXXXXXX",
   "ghSecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "hookUrl": "http://XXXXXXXXX.ngrok.com/publish"
