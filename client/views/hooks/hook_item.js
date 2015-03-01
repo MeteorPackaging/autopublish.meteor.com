@@ -52,18 +52,36 @@ Template.hookItem.events({
     e.preventDefault();
     instance.updating.set(true);
 
-    Meteor.call('toggleApproveHook', {
-      hookId: this.hook_id,
-      repoFullName: this.repoFullName
-    }, function(err, result) {
-      instance.updating.set(false);
-      if (result.approved !== undefined) {
-        var status = 'uncheck';
-        if (result.approved) {
-          status = 'check';
+    Meteor.call('toggleApproveHook',
+      this.hook_id,
+      this.repoFullName,
+      function(err, result) {
+        instance.updating.set(false);
+        if (result.approved !== undefined) {
+          var status = 'uncheck';
+          if (result.approved) {
+            status = 'check';
+          }
+          instance.$('.ui.checkbox').checkbox(status);
         }
-        instance.$('.ui.checkbox').checkbox(status);
       }
-    });
+    );
+  },
+  'click #removeHook': function(e){
+    e.preventDefault();
+
+    Meteor.call('removeHook',
+      this.hook_id,
+      this.repoFullName
+    );
+  },
+  'click #testHook': function(e){
+    e.preventDefault();
+
+    console.log("Test hook " + this.hook_id);
+    Meteor.call('testHook',
+      this.hook_id,
+      this.repoFullName
+    );
   },
 });

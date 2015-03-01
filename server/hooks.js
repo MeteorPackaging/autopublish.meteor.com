@@ -23,9 +23,9 @@ processHookPingEvent = function(ping) {
   hookDoc.alive = true;
   hookDoc.lastTested = new Date();
 
-	// console.log('Received Ping Event');
+	console.log('Received Ping Event');
 	// console.dir(ping);
-	// console.dir(hookDoc);
+	console.dir(hookDoc);
 
   // Selector for the hook document
   var selector = {
@@ -69,6 +69,59 @@ processHookPingEvent = function(ping) {
 
 
 Meteor.methods({
+  testHook: function(hookId, repoFullName){
+    'use strict';
+
+    // Since this is not a blocking method, tells the next method calls can
+    // start in a new fiber without waiting this one to complete
+    this.unblock();
+
+    console.log("testHook");
+
+    // Checks the user is an admin
+    if (Roles.userIsInRole(this.userId, ['admin'])) {
+      console.log("admin!");
+      // Selector for the hook document
+      var selector = {
+        hook_id: hookId,
+        "repoFullName": repoFullName
+      };
+      console.dir(selector);
+      // Checks the requested hook exists
+      var hook = KnownHooks.findOne(selector);
+
+      if (hook) {
+        console.log("known hook!");
+
+        var userCredentials = Meteor.settings.defaultGitHubUser;
+
+        github.authenticate({
+          type: "basic",
+          username: userCredentials.userName,
+          password: userCredentials.pwd
+        });
+
+        var name = hook.repoFullName.split('/');
+        console.log("name:");
+        console.dir(name);
+        console.log("hook_id:");
+        console.dir(hook.hook_id);
+        github.repos.testHook({
+          user: name[0],
+          repo: name[1],
+          id: hook.hook_id
+        }, function(err, result){
+          if (err) {
+            KnownHooks.update(hook._id, {
+              $set: {
+                alive: false
+              }
+            });
+          }
+        });
+      }
+    }
+  },
   toggleApproveHook: function(hookId, repoFullName){
     'use strict';
 
@@ -92,7 +145,7 @@ Meteor.methods({
       // Selector for the hook document
       var selector = {
         hook_id: hookId,
-        "repository.full_name": repoFullName
+        "repoFullName": repoFullName
       };
       // Checks the requested hook exists
       var hook = KnownHooks.findOne(selector);
@@ -119,5 +172,31 @@ Meteor.methods({
       ret.approved = approved;
     }
     return ret;
+  },
+  removeHook: function(hookId, repoFullName){
+    'use strict';
+
+    // Since this is not a blocking method, tells the next method calls can
+    // start in a new fiber without waiting this one to complete
+    this.unblock();
+
+    // Checks the user is an admin
+    if (Roles.userIsInRole(this.userId, ['admin'])) {
+      // Selector for the hook document
+      var selector = {
+        hook_id: hookId,
+        "repoFullName": repoFullName
+      };
+      // Checks the requested hook exists
+      var hook = KnownHooks.findOne(selector);
+
+      if (hook) {
+        KnownHooks.update(hook._id, {
+          $set: {
+            deleted: true
+          }
+        });
+      }
+    }
   }
 });
