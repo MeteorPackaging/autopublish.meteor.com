@@ -16,6 +16,8 @@ Sample KnownHooks document:
 {
   approved: true,
   alive: true,
+  lastSeen: Date,
+  lastTested: Date,
   hook_id: 4222698,
   hook: {
     url: 'https://api.github.com/repos/MeteorPackaging/autopublish-test/hooks/4222698',

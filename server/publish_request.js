@@ -2,6 +2,7 @@
 
 /* global
 		HookPayloads: false,
+		KnownHooks: false,
 		processHookPingEvent: false
 */
 
@@ -102,6 +103,20 @@ Meteor.methods({
 				repoCloneUrl: repoCloneUrl,
 				status: 'queueing',
 			});
+
+			// Updates lastSeen field of corresponding hook
+			var knownHook = KnownHooks.findOne({
+				"repoFullName": repoFullName
+			});
+			if (knownHook) {
+				KnownHooks.update(knownHook._id, {
+					$set: {
+						alive: true,
+						lastSeen: new Date()
+					}
+				});
+			}
+
 			// console.log('New Publish request created!');
 		} else if (payload.ref_type === "tag") {
 			/*
@@ -142,6 +157,20 @@ Meteor.methods({
 				repoCloneUrl: repoCloneUrl,
 				status: 'queueing',
 			});
+
+			// Updates lastSeen field of corresponding hook
+			var knownHook = KnownHooks.findOne({
+				"repoFullName": repoFullName
+			});
+			if (knownHook) {
+				KnownHooks.update(knownHook._id, {
+					$set: {
+						alive: true,
+						lastSeen: new Date()
+					}
+				});
+			}
+
 			// console.log('New Publish request created!');
 	  } else if (payload.head_commit) {
 			// console.log('  push action');
