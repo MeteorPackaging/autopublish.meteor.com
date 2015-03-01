@@ -1,0 +1,24 @@
+<template name="Hooks">
+  <div class="ui one column hooks page grid">
+    <div class="row">
+      <div class="column">
+        <h2 class="ui header">
+          Known Hooks
+        </h2>
+        <div class="ui fluid icon input">
+          <input id="hookSearch" type="text" placeholder="Search...">
+          <i class="circular search icon"></i>
+        </div>
+        <div class="ui hooks segment">
+          <div class="ui divided list">
+            {{#each hooks}}
+              {{> hookItem}}
+            {{else}}
+              <p>No Hooks found!</p>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

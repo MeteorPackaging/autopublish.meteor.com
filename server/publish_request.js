@@ -1,12 +1,17 @@
 'use strict';
 
-/* global HookPayloads: false */
+/* global
+		HookPayloads: false,
+		processHookPingEvent: false
+*/
 
 Meteor.methods({
 	processPublishRequest: function(payload) {
+		/*
 		console.log('Received publish request');
-		//console.log('Payload:');
-		//console.dir(payload);
+		console.log('Payload:');
+		console.dir(payload);
+		*/
 
 		// Stores the received payload as requests log...
 		var payloadDoc = {
@@ -15,6 +20,13 @@ Meteor.methods({
 		};
 		HookPayloads.insert(payloadDoc);
 
+		// Checks if this is a webhook ping event
+		// See https://developer.github.com/webhooks/#ping-event
+		if (payload.zen) {
+			processHookPingEvent(payload);
+		}
+
+		// Makes sure it's a 'valid' github webhook payload...
 		if (!payload.repository) {
 			throw new Meteor.Error(400, "Invalid Payload!");
 		}

@@ -1,0 +1,17 @@
+<template name="hookItem">
+  <div class="item">
+    <div class="right floated ui basic fitted segment">
+      <div class="ui {{#if updating}}active{{/if}} inverted dimmer">
+        <div class="ui mini loader"></div>
+      </div>
+      <div class="ui toggle checkbox">
+        <input type="checkbox" name="autopublish">
+        <label>Approved</label>
+      </div>
+    </div>
+    <div class="content">
+      <div class="header">{{{repoFullName}}} (id {{hook_id}})</div>
+      Last seen: <i>{{lastSeen}}</i> Last tested: <i>{{lastTested}}</i>
+    </div>
+  </div>
+</template>
