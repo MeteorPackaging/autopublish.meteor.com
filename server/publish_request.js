@@ -37,7 +37,7 @@ Meteor.methods({
 			repoName = repository.name,
 			repoFullName = repository.full_name
 		;
-		console.log('Repository: ' + repoName);
+		// console.log('Repository: ' + repoName);
 
 		// Looks for a valid subscription
 		var sub = Subscriptions.findOne({
@@ -60,7 +60,7 @@ Meteor.methods({
 						tested: true
 					}
 				});
-				console.log("Subscription successfully tested!");
+				// console.log("Subscription successfully tested!");
 			} else {
 				throw new Meteor.Error(
 					409,
@@ -68,7 +68,7 @@ Meteor.methods({
 				);
 			}
 		} else if (payload.action === 'published' && payload.release) {
-			console.log('  release action');
+			// console.log('  release action');
 			// New Release!
 			var
 				release = payload.release,
@@ -102,7 +102,7 @@ Meteor.methods({
 				repoCloneUrl: repoCloneUrl,
 				status: 'queueing',
 			});
-			console.log('New Publish request created!');
+			// console.log('New Publish request created!');
 		} else if (payload.ref_type === "tag") {
 			/*
 			"ref": "0.0.9",
@@ -110,7 +110,7 @@ Meteor.methods({
 			"master_branch": "master",
 			*/
 			// New Tag!
-			console.log("Tag action");
+			// console.log("Tag action");
 			var
 			  now = new Date(),
 				releaseName = payload.ref,
@@ -142,9 +142,9 @@ Meteor.methods({
 				repoCloneUrl: repoCloneUrl,
 				status: 'queueing',
 			});
-			console.log('New Publish request created!');
+			// console.log('New Publish request created!');
 	  } else if (payload.head_commit) {
-			console.log('  push action');
+			// console.log('  push action');
 			var
 				repoCommit = payload.head_commit.id,
 				repoName = payload.repository.name,
@@ -152,11 +152,24 @@ Meteor.methods({
 				meteorUser = process.env.METEOR_USER,
 				meteorPwd = process.env.METEOR_PWD;
 
-			console.log('  commit: ' + repoCommit);
-			console.log('  name  : ' + repoName);
-			console.log('  url   : ' + repoUrl);
+			// console.log('  commit: ' + repoCommit);
+			// console.log('  name  : ' + repoName);
+			// console.log('  url   : ' + repoUrl);
 
 			//publishPackage(repoUrl, repoName, repoCommit, meteorUser, meteorPwd);
+		}
+	},
+	republish: function(actionId) {
+		// Checks the user is an admin
+    if (Roles.userIsInRole(this.userId, ['admin'])) {
+			var publishAction = AutoPublish.findOne(actionId);
+			if (publishAction) {
+				AutoPublish.update(actionId, {
+					$set: {
+						status: "queueing"
+					}
+				});
+			}
 		}
 	}
 });
