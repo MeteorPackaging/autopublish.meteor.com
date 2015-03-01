@@ -54,7 +54,7 @@ Template.hookItem.events({
 
     Meteor.call('toggleApproveHook', {
       hookId: this.hook_id,
-      repoFullName: this.repository.full_name
+      repoFullName: this.repoFullName
     }, function(err, result) {
       instance.updating.set(false);
       if (result.approved !== undefined) {
