@@ -76,6 +76,7 @@ Meteor.publish(statsCollectionName, function () {
     initializing = true,
     objId = "_stats",
     subsCount = 0,
+    hooksCount = 0,
     publishCounts = {
       queueing: 0,
       successful: 0,
@@ -98,6 +99,20 @@ Meteor.publish(statsCollectionName, function () {
     removed: function () {
       subsCount--;
       self.changed(statsCollectionName, objId, {subsCount: subsCount});
+    }
+    // don't care about changed
+  });
+
+  var hooksHandle = KnownHooks.find().observeChanges({
+    added: function () {
+      hooksCount++;
+      if (!initializing) {
+        self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
+      }
+    },
+    removed: function () {
+      hooksCount--;
+      self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
     }
     // don't care about changed
   });
@@ -146,6 +161,7 @@ Meteor.publish(statsCollectionName, function () {
   initializing = false;
   self.added(statsCollectionName, objId, {
     subsCount: subsCount,
+    hooksCount: hooksCount,
     publishCounts: publishCounts
   });
   self.ready();
@@ -155,6 +171,7 @@ Meteor.publish(statsCollectionName, function () {
   // care of sending the client any removed messages.
   self.onStop(function () {
     subsHandle.stop();
+    hooksHandle.stop();
     autopubHandle.stop();
   });
 });

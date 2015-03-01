@@ -1,5 +1,6 @@
 /* global
-    HookSearch: false
+    HookSearch: false,
+    Statistics: false
 */
 'use strict';
 
@@ -26,9 +27,20 @@ Template.Hooks.helpers({
       sort: {"repoFullName": 1}
     });
   },
-
   isLoading: function() {
     return HookSearch.getStatus().loading;
+  },
+  numHooks: function(){
+    var stats = Statistics.findOne();
+    if (stats) {
+      var hooksCount = stats.hooksCount;
+      if (hooksCount > 0) {
+        return '( ' + hooksCount + ' total)';
+      }
+      else {
+        return '(None!)';
+      }
+    }
   }
 });
 
