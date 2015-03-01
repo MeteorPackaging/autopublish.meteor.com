@@ -1,9 +1,10 @@
 'use strict';
 /* global
     AutoPublish: false,
+    github: false,
     oldestQueueing: false,
-    regularPublish: false,
     queueingSelector: false,
+    regularPublish: false,
     Subscriptions: false
 */
 
@@ -46,6 +47,25 @@ var publishNextPackage = function(){
             pkgVersion: result.version
           }
         });
+      } else {
+        var
+          userCredentials = Meteor.settings.defaultGitHubUser,
+          failedPublishIssue = _.clone(Meteor.settings.issues.failedPublish)
+        ;
+
+        // Adds the body for the issue
+        failedPublishIssue.body =
+          'Publish for package ' +
+          next.pkgName +
+          ' failed, please revise!'
+        ;
+
+        github.authenticate({
+          type: "basic",
+          username: userCredentials.userName,
+          password: userCredentials.pwd
+        });
+        github.issues.createComment(failedPublishIssue);
       }
 
       // Goes to the next queueing package (in case it exists...)
