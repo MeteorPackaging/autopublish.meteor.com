@@ -71,3 +71,11 @@ Template.publishAction.helpers({
     return this.status === 'successful';
   },
 });
+
+Template.publishAction.events({
+  'click #republishButton': function(e){
+    e.preventDefault();
+    console.log(this._id);
+    Meteor.call('republish', this._id);
+  }
+});
