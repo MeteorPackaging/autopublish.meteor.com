@@ -12,6 +12,8 @@ Host = function(serverDetails, msgCallback){
   this.commands = [];
   this.msg = msgCallback;
 
+  this.idleTimeOut = 60000;  // One minute timeout...
+
   // Standard messages
   this.connectedMessage = "Connected to Build Machine";
   this.readyMessage = "Now running command sequence";
@@ -144,9 +146,7 @@ Host.prototype.onEnd = function(sessionText, hostObj) {
   var prmptRe = new RegExp(prmpt, "mg");
 
   // Strips useless \r...\r parts...
-  // FIXME: it seems this creates problems while trying to detect final
-  //        commands' outcome: sometimes also the last line is stripped out :(
-  // response = this.cleanCR(response);
+  sessionText = this.cleanCR(sessionText);
 
   // Removes the prompt from sessionText
   sessionText = sessionText.replace(prmptRe, "");
