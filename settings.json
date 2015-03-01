@@ -1,25 +1,30 @@
 {
-  "supportMachine": {
-    "host": "xxx.xxx.xxx.xxx",
-    "userName": "xxxxxxx",
-    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
-  },
-  "defaultMeteorUser": {
-    "userName": "xxxxxxx",
-    "pwd": "xxxxxxxxxxxxxxxxxxxxx"
-  },
+	"supportMachine": {
+		"host": "xxx.xxx.xxx.xxx",
+		"userName": "xxxxxxx",
+		"privateKey": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+	},
+	"defaultMeteorUser": {
+		"userName": "xxxxxxx",
+		"pwd": "xxxxxxxxxxxxxxxxxxxxx"
+	},
 	"defaultGitHubUser": {
-    "userName": "xxxxxxx",
-    "pwd": "xxxxxxxxxxxxxxxxxxxxx"
+		"userName": "xxxxxxx",
+		"pwd": "xxxxxxxxxxxxxxxxxxxxx"
 	},
 	"issues": {
 		"newHook": {
 			"user": "MeteorPackaging",
-      "repo": "autopublish.meteor.com",
+			"repo": "autopublish.meteor.com",
 			"number": 10
+		},
+		"failedPublish": {
+			"user": "MeteorPackaging",
+			"repo": "autopublish.meteor.com",
+			"number": 11
 		}
 	},
-  "ghClientId": "XXXXXXXXXXXXXXXXXXXXX",
-  "ghSecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  "hookUrl": "http://XXXXXXXXX.ngrok.com/publish"
+	"ghClientId": "XXXXXXXXXXXXXXXXXXXXX",
+	"ghSecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"hookUrl": "http://XXXXXXXXX.ngrok.com/publish"
 }
