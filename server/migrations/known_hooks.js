@@ -4,7 +4,7 @@
 */
 'use strict';
 
-
+/*
 Meteor.startup(function(){
   // Create KnownHooks documents from ping events received in the past
   HookPayloads.find().forEach(function(doc){
@@ -14,3 +14,4 @@ Meteor.startup(function(){
     }
   });
 });
+*/

@@ -11,7 +11,7 @@ var adminEmails = [
 _.each(adminEmails, function(email){
   var user = Meteor.users.findOne({"emails.address" : email});
   if (user) {
-    console.log("Granting admin rights to " + user.profile.login);
+    // console.log("Granting admin rights to " + user.profile.login);
     Roles.addUsersToRoles(user._id, ['admin']);
   }
 });

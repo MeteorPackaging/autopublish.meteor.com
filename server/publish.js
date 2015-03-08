@@ -177,39 +177,17 @@ Meteor.publish(statsCollectionName, function () {
 });
 
 
-
-SearchSource.defineSource('knownhooks', function(searchText, options) {
-
-  /*
-  console.log("Getting data from source knownhooks");
-  console.log("userId: " + this.userId);
-  console.log("searchText: ");
-  console.dir(searchText);
-  */
-
-  // Checks the user is an admin
+Meteor.publish('knownhooks', function(){
   if (Roles.userIsInRole(this.userId, ['admin'])) {
-    options = options || {};
-    options.fields = {
-      "alive": 1,
-      "approved": 1,
-      "hook_id": 1,
-      "repoFullName": 1,
-      "lastSeen": 1,
-      "lastTested": 1,
-    };
-
-    if(searchText) {
-      var
-        parts = searchText.trim().split(/[ \-\:]+/),
-        regExp = new RegExp("(" + parts.join('|') + ")", "ig"),
-        selector = {"repoFullName": regExp}
-      ;
-
-      return KnownHooks.find(selector, options).fetch();
-    }
-    return KnownHooks.find({}, options).fetch();
+    return KnownHooks.find({}, {
+      fields: {
+        "alive": 1,
+        "approved": 1,
+        "hook_id": 1,
+        "repoFullName": 1,
+        "lastSeen": 1,
+        "lastTested": 1,
+      }
+    });
   }
-
-  return [];
 });

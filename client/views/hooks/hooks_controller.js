@@ -1,6 +1,5 @@
 /* global
   HooksController: true,
-  HookSearch: false,
   Roles: false,
   RouteController: false
 */
@@ -45,14 +44,6 @@ HooksController = RouteController.extend({
       }
     }
   },
-  onAfterAction: function() {
-    'use strict';
-
-    Tracker.nonreactive(function(){
-      var searchText = Session.get('searchText');
-      HookSearch.search(searchText);
-    });
-  },
 
   onStop: function(){
     'use strict';
@@ -63,5 +54,10 @@ HooksController = RouteController.extend({
 		if (counterInterval) {
       Meteor.clearInterval(counterInterval);
     }
-  }
+  },
+
+  subscriptions: function(){
+    'use strict';
+    return Meteor.subscribe("knownhooks");
+  },
 });

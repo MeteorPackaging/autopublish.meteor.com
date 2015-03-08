@@ -1,5 +1,5 @@
 /* global
-    HookSearch: false,
+    KnownHooks: false,
     Statistics: false
 */
 'use strict';
@@ -18,17 +18,25 @@ Template.Hooks.rendered = function(){
 
 Template.Hooks.helpers({
   hooks: function() {
-    return HookSearch.getData({
-      transform: function(matchText, regExp) {
+    var
+      searchText = Session.get('searchText') || '',
+      parts = searchText.trim().split(/[ \-\:]+/),
+      regExp = new RegExp("(" + parts.join('|') + ")", "ig"),
+      selector = {"repoFullName": regExp}
+    ;
+    return KnownHooks.find(selector, {
+      transform: function(hook) {
+        var matchText = hook.repoFullName;
         if (matchText && regExp) {
-          return matchText.replace(regExp, "<u>$&</u>");
+          hook.repoFullName = matchText.replace(regExp, "<u>$&</u>");
         }
+        return hook;
       },
       sort: {"repoFullName": 1}
     });
   },
   isLoading: function() {
-    return HookSearch.getStatus().loading;
+    return Router.current().ready();
   },
   numHooks: function(){
     var stats = Statistics.findOne();
@@ -46,10 +54,8 @@ Template.Hooks.helpers({
 
 
 Template.Hooks.events({
-  "keyup #hookSearch": function(e) {
-    var searchText = $(e.target).val().trim();
-    console.log("hookSearch: " + searchText);
-    Session.set('searchText', searchText);
-    HookSearch.search(searchText);
-  }
+  "keyup #hookSearch": _.throttle(function(e) {
+    var searchText = $(e.target).val() || '';
+    Session.set('searchText', searchText.trim());
+  }, 200)
 });

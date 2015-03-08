@@ -1,9 +1,5 @@
 /* global
-  HookSearch: true,
-  SearchSource: false
+  KnownHooks: true
 */
 
-HookSearch = new SearchSource('knownhooks', ['repoFullName'], {
-  keepHistory: 1000 * 60 * 5,
-  localSearch: false
-});
+KnownHooks = new Mongo.Collection("knownhooks");

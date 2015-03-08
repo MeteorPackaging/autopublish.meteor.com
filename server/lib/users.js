@@ -1,5 +1,9 @@
-"user strict";
-/* global github: false, Accounts: false */
+/* global
+    Async: false,
+    Accounts: false,
+    github: false
+*/
+'use strict';
 
 Accounts.onCreateUser(function(options, user) {
   var
@@ -19,7 +23,7 @@ Accounts.onCreateUser(function(options, user) {
 
   if (token) {
     github.authenticate({
-      type: "oauth",
+      type: 'oauth',
       token: token
     });
   }
