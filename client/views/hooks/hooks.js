@@ -22,17 +22,23 @@ Template.Hooks.helpers({
       searchText = Session.get('searchText') || '',
       parts = searchText.trim().split(/[ \-\:]+/),
       regExp = new RegExp("(" + parts.join('|') + ")", "ig"),
-      selector = {"repoFullName": regExp}
+      selector = {repoFullName: regExp}
     ;
     return KnownHooks.find(selector, {
       transform: function(hook) {
         var matchText = hook.repoFullName;
-        if (matchText && regExp) {
-          hook.repoFullName = matchText.replace(regExp, "<u>$&</u>");
+        if (searchText.length > 0 && matchText && regExp) {
+          hook.displayName = matchText.replace(regExp, "<u>$&</u>");
+        }
+        else {
+          hook.displayName = matchText;
         }
         return hook;
       },
-      sort: {"repoFullName": 1}
+      sort: {
+        repoFullName: 1,
+        hook_id: 1,
+      }
     });
   },
   isLoading: function() {

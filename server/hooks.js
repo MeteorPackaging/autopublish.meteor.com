@@ -23,9 +23,9 @@ processHookPingEvent = function(ping) {
   hookDoc.alive = true;
   hookDoc.lastTested = new Date();
 
-	console.log('Received Ping Event');
+	// console.log('Received Ping Event');
 	// console.dir(ping);
-	console.dir(hookDoc);
+	// console.dir(hookDoc);
 
   // Selector for the hook document
   var selector = {
@@ -128,8 +128,6 @@ Meteor.methods({
     // Since this is not a blocking method, tells the next method calls can
     // start in a new fiber without waiting this one to complete
     this.unblock();
-
-    // console.log('toggleApproveHook');
 
     var
       // Array of possible errors to appear during toggle operations

@@ -9,7 +9,7 @@ Template.hookItem.rendered = function() {
     self = this,
     status = 'uncheck';
 
-  if (self.approved) {
+  if (self.data.approved) {
     status = 'check';
   }
 
