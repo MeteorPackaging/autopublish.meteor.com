@@ -222,7 +222,7 @@ actions.meteorPublish = function(machine, pkgInfo) {
     // Otherwise extracts publish information
     // else if (/Published/gi.test(response)) {
     else {
-      var re = RegExp(".*Published " + pkgInfo.pkgName + "@(.*).", "gi");
+      var re = RegExp(".*Published " + pkgInfo.pkgName + "@(.*)\.", "gi");
       var match = re.exec(response);
       if (match) {
         // Successfully published!
