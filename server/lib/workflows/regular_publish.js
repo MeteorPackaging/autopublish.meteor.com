@@ -12,14 +12,12 @@ regularPublish = function(pkgInfo, callback) {
 
   var userCredentials = Meteor.settings.defaultMeteorUser;
 
-  /*
   getBuildMachine(
     "os.linux.x86_64",
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
       if (getMachineResult.success) {
-  */
 
         var progress = {
           send: Meteor.bindEnvironment(function(msg){
@@ -96,6 +94,9 @@ regularPublish = function(pkgInfo, callback) {
         // Everything done!
         buildMachine.addCommand('msg:Done!');
 
+        // Double check running 'meteor show'
+        actions.done(buildMachine, pkgInfo);
+
         // Actually starts the command sequence
         buildMachine.run(function(err, sessionText, hostObj){
 
@@ -111,6 +112,12 @@ regularPublish = function(pkgInfo, callback) {
             result.success = false;
             result.errors = hostObj.errors;
           }
+          else if (!hostObj.result.completed){
+            hostObj.errors.push('Operations not completed!');
+
+            result.success = false;
+            result.errors = hostObj.errors;
+          }
           else {
             result.success = true;
           }
@@ -118,12 +125,10 @@ regularPublish = function(pkgInfo, callback) {
           // Eventually calls the final callback
           callback(result);
         });
-  /*
       }
       else {
         callback(getMachineResult);
       }
     })
   );
-  */
 };

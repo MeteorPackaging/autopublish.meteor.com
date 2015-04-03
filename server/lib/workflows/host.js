@@ -12,7 +12,7 @@ Host = function(serverDetails, msgCallback){
   this.commands = [];
   this.msg = msgCallback;
 
-  this.idleTimeOut = 60000;  // One minute timeout...
+  this.idleTimeOut = 120000;  // Two minute timeout...
 
   // Standard messages
   this.connectedMessage = "Connected to Build Machine";

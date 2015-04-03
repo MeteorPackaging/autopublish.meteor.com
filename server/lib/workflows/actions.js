@@ -74,6 +74,20 @@ actions.checkMeteorVersion = function(machine) {
 };
 
 
+actions.done = function(machine, pkgInfo) {
+  // Double checks by running 'meteor show'
+  // end eventually marks the publish action as *completed*!
+  var cmd = '~/.meteor/meteor show ' + pkgInfo.pkgName;
+  machine.addCommand('msg:Double checking...');
+  machine.addCommand(cmd);
+  machine.addCompleteAction({
+    cmd: cmd,
+    callback: function(response, hostObj) {
+      hostObj.result.completed = true;
+    }
+  });
+};
+
 actions.getBuildMachine = function(machine, architecture) {
   // See the following links for more details (also about restrictions):
   // * https://github.com/meteor/meteor/wiki/Build-Machines
