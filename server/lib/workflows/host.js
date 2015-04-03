@@ -175,15 +175,21 @@ Host.prototype.run = function(endCallback){
 
   if (endCallback) {
     self.addEndAction(endCallback);
-
-    ssh.on("error", function onError(err) {
-      if (self.verbose) {
-        console.log("SSH2SHELL ERROR!!!");
-        console.dir(err);
-      }
-      endCallback(err, self.sessionText, self);
-    });
   }
+
+  ssh.on("error", function onError(err) {
+    if (self.verbose) {
+      console.log("SSH2SHELL ERROR!!!");
+      console.dir(err);
+    }
+
+    self.errors.push(err);
+    self.sessionText += '\n' + err;
+
+    if (endCallback) {
+      endCallback(err, self.sessionText, self);
+    }
+  });
 
   //Start the process
   this.connection = ssh.connect();
