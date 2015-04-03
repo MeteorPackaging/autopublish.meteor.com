@@ -12,12 +12,14 @@ regularPublish = function(pkgInfo, callback) {
 
   var userCredentials = Meteor.settings.defaultMeteorUser;
 
+  /*
   getBuildMachine(
     "os.linux.x86_64",
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
       if (getMachineResult.success) {
+  */
 
         var progress = {
           send: Meteor.bindEnvironment(function(msg){
@@ -125,10 +127,12 @@ regularPublish = function(pkgInfo, callback) {
           // Eventually calls the final callback
           callback(result);
         });
+  /*
       }
       else {
         callback(getMachineResult);
       }
-    })
+    });
   );
+  */
 };
