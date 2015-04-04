@@ -146,7 +146,7 @@ Host.prototype.onEnd = function(sessionText, hostObj) {
   var prmptRe = new RegExp(prmpt, "mg");
 
   // Strips useless \r...\r parts...
-  sessionText = this.cleanCR(sessionText);
+  //sessionText = this.cleanCR(sessionText);
 
   // Removes the prompt from sessionText
   sessionText = sessionText.replace(prmptRe, "");
