@@ -1,0 +1,66 @@
+<template name="Log">
+	<div class="ui stackable three column page grid">
+
+    <div class="one column row">
+      <div class="column">
+				{{#unless Template.subscriptionsReady}}
+					<div class="ui icon message">
+					  <i class="notched circle loading icon"></i>
+					  <div class="content">
+					    <div class="header">
+					      Just one second
+					    </div>
+					    <p>We're fetching that content for you.</p>
+					  </div>
+					</div>
+				{{else}}
+
+					{{#with publishAction}}
+		        <h1 class="ui center aligned dividing header">
+		          Publish Action Details
+		          <div class="sub header">
+		            <div>
+		              Package
+		              <b>{{pkgName}}</b>
+		            </div>
+		          </div>
+		        </h1>
+
+						<div class="info ui message">
+							<div class="content">
+								<div class="header">Details:</div>
+								<ul class="list">
+									<li><b>Published:</b> {{publishedAt}}</li>
+									<li><b>Created:</b> {{createdAt}}</li>
+									<li><b>Completed:</b> {{completedAt}}</li>
+									<li><b>Status:</b> {{status}}</li>
+									<li><b>Repo Url:</b> {{repoCloneUrl}}</li>
+									<li><b>Branch:</b> {{releaseTargetCommittish}}</li>
+									<li><b>Tag:</b> {{tagName}}</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="warning ui message">
+							<div class="content">
+								<div class="header">Errors:</div>
+								<ul class="list">
+									{{#each errors}}
+										<li>{{this}}</li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+
+						<div class="warning ui message">
+				      <p>Log</p>
+				      <div class="ui existing secondary segment">
+								<pre>{{log}}</pre>
+							</div>
+				    </div>
+					{{/with}}
+				{{/unless}}
+      </div>
+    </div>
+	</div>
+</template>

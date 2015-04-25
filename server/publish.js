@@ -191,3 +191,8 @@ Meteor.publish('knownhooks', function(){
     });
   }
 });
+
+
+Meteor.publish('log', function(logId){
+  return AutoPublish.find(logId);
+});
