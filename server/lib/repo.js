@@ -371,7 +371,7 @@ Meteor.methods({
             //            we get two triggers...
             //            Options needed to select which one to listen to!
             //events: ["create", "release"],
-            events: ["create"],
+            events: ["release"],
             active: true,
           }, function(err, data) {
             done(null, data);
