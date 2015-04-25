@@ -85,7 +85,7 @@ Template.loadMoreList.helpers({
 });
 
 Template.loadMoreList.events({
-  'click .button': function (event, instance) {
+  'click .load-more.button': function (event, instance) {
     event.preventDefault();
     // Increments the current value for limit,
     // i.e. how many items are currently displayed
