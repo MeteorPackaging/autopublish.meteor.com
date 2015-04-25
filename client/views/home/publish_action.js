@@ -77,5 +77,11 @@ Template.publishAction.events({
     e.preventDefault();
     console.log(this._id);
     Meteor.call('republish', this._id);
-  }
+  },
+  'click .show-log.button': function(e){
+    e.preventDefault();
+    console.log('show log!');
+    console.dir(this);
+    Router.go('log.show', {_id: this._id});
+  },
 });
