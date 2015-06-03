@@ -1,7 +1,7 @@
 'use strict';
 
-Template.warnings.rendered = function(){
-  this.$('i.warning.icon')
+Template.repoErrors.onRendered(function(){
+  this.$('i.remove.circle.icon')
     .popup({
       inline   : true,
       hoverable: true,
@@ -12,4 +12,4 @@ Template.warnings.rendered = function(){
       }
     })
   ;
-};
+});

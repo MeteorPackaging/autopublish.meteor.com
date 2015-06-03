@@ -1,0 +1,11 @@
+<template name="repoWebhook">
+  <div class="ui basic fitted segment">
+    <div class="ui {{#if updating}}active{{/if}} inverted dimmer">
+      <div class="ui mini loader"></div>
+    </div>
+    <div class="ui toggle checkbox">
+      <input type="checkbox" name="autopublish">
+      <label>Webhook</label>
+    </div>
+  </div>
+</template>

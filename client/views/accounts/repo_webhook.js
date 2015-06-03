@@ -1,43 +1,41 @@
 'use strict';
 
-Template.repoToggle.rendered = function(){
-  if (this.data.info && this.data.info.enabled){
-    this.$('.ui.checkbox')
+Template.repoWebhook.onRendered(function(){
+  var self = this;
+  if (self.data.repoDetails && self.data.repoDetails.enabled){
+    self.$('.ui.checkbox')
       .checkbox('check')
     ;
   }
   else {
-    this.$('.ui.checkbox')
+    self.$('.ui.checkbox')
       .checkbox('uncheck')
     ;
   }
-};
+});
 
-Template.repoToggle.created = function(){
+Template.repoWebhook.created = function(){
   var self = this;
   self.updating = new ReactiveVar(false);
 };
 
-Template.repoToggle.helpers({
+Template.repoWebhook.helpers({
   updating: function(){
     return Template.instance().updating.get();
   },
 });
 
-Template.repoToggle.events({
+Template.repoWebhook.events({
   'click .ui.checkbox': function(e, instance){
     instance.updating.set(true);
-    Meteor.call('toggleRepo', {
+    Meteor.call('toggleWebhook', {
       id: instance.data._id,
       fullName: instance.data.full_name,
-      pkgName: instance.data.info.name,
-      pkgVersion: instance.data.info.version,
-      pkgSummary: instance.data.info.summary,
       gitUrl: instance.data.html_url
     }, function(err, result){
       instance.updating.set(false);
       if (result.enabled !== undefined){
-        instance.data.enabled = result.enabled;
+        instance.data.repoDetails.enabled = result.enabled;
         var status = 'uncheck';
         if (result.enabled){
           status = 'check';

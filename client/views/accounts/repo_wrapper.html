@@ -1,14 +1,11 @@
-<template name="repoToggle">
+<template name="repoWrapper">
   <div class="ui basic fitted segment">
     <div class="ui {{#if updating}}active{{/if}} inverted dimmer">
       <div class="ui mini loader"></div>
     </div>
-    {{#if enabled}}
-      {{> settings}}
-    {{/if}}
     <div class="ui toggle checkbox">
       <input type="checkbox" name="autopublish">
-      <label>Autopublish</label>
+      <label>Autopublish Wrapper</label>
     </div>
   </div>
 </template>

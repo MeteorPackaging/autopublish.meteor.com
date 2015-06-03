@@ -1,0 +1,14 @@
+<template name="repoErrors">
+  <i class="red remove circle icon"></i>
+  <div class="ui lean wide popup">
+    <div class="ui error icon message">
+      <i class="remove circle icon"></i>
+      <div class="header">The following errors occurred:</div>
+      <ul class="list">
+        {{#each errors}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</template>

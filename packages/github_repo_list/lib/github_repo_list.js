@@ -173,18 +173,18 @@ Tracker.autorun(function () {
 
 
 
-Template.githubRepoList.rendered = function(){
+Template.githubRepoList.onRendered(function(){
   // Adds the current instance to the array of template instances
   githubRepoList._instances.push(this);
-};
+});
 
-Template.githubRepoList.destroyed = function(){
+Template.githubRepoList.onDestroyed(function(){
   // Possibly removes the current instance from the array of template instances
   var index = githubRepoList._instances.indexOf(this);
   if (index > -1) {
     githubRepoList._instances.splice(index, 1);
   }
-};
+});
 
 
 Template.githubRepoList.helpers({

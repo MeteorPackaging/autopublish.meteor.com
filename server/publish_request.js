@@ -46,146 +46,118 @@ Meteor.methods({
 			repoId: repoId,
 		});
 
-		if (!sub) {
-			throw new Meteor.Error(403, "No subscription found for this repository!");
-		}
+		if (sub) {
+			if (payload.hook) {
+				// Test Payload
+				var hookId = payload.hook_id;
 
-		if (payload.hook) {
-			// Test Payload
-			var hookId = payload.hook_id;
+				// Simply sets 'tested' field to true
+				if (sub.hookId === hookId) {
+					Subscriptions.update(sub._id, {
+						$set: {
+							tested: true
+						}
+					});
+					// console.log("Subscription successfully tested!");
+				} else {
+					throw new Meteor.Error(
+						409,
+						"Invalid hook id! Try disabling/re-enabling autopublish..."
+					);
+				}
+			} else if (payload.action === 'published' && payload.release) {
+				// console.log('  release action');
+				// New Release!
+				var
+					release = payload.release,
+					publishedAt = release.published_at,
+					tagName = release.tag_name,
+					releaseName = release.name,
+					releaseBody = release.body,
+					releaseTargetCommittish = release.target_commitish,
+					repoCloneUrl = repository.clone_url
+				;
 
-			// Simply sets 'tested' field to true
-			if (sub.hookId === hookId) {
-				Subscriptions.update(sub._id, {
-					$set: {
-						tested: true
-					}
+				// Adds the new publish request
+				// documents are in the form:
+				//
+				// {
+				//   createdAt: Date
+				//   completedAt: Date
+				//   packageName: String
+				//   version: String
+				//   arch: String
+				//   status: String ('queueing, successful, errored')
+				//  error: String
+				// }
+				AutoPublish.insert({
+					createdAt: new Date(),
+					publishedAt: publishedAt,
+					pkgName: sub.pkgName,
+					tagName: tagName,
+					releaseName: releaseName,
+					releaseTargetCommittish: releaseTargetCommittish,
+					repoCloneUrl: repoCloneUrl,
+					status: 'queueing',
 				});
-				// console.log("Subscription successfully tested!");
-			} else {
-				throw new Meteor.Error(
-					409,
-					"Invalid hook id! Try disabling/re-enabling autopublish..."
-				);
-			}
-		} else if (payload.action === 'published' && payload.release) {
-			// console.log('  release action');
-			// New Release!
-			var
-				release = payload.release,
-				publishedAt = release.published_at,
-				tagName = release.tag_name,
-				releaseName = release.name,
-				releaseBody = release.body,
-				releaseTargetCommittish = release.target_commitish,
-				repoCloneUrl = repository.clone_url
-			;
 
-			// Adds the new publish request
-			// documents are in the form:
-			//
-			// {
-			//   createdAt: Date
-			//   completedAt: Date
-			//   packageName: String
-			//   version: String
-			//   arch: String
-			//   status: String ('queueing, successful, errored')
-			//  error: String
-			// }
-			AutoPublish.insert({
-				createdAt: new Date(),
-				publishedAt: publishedAt,
-				pkgName: sub.pkgName,
-				tagName: tagName,
-				releaseName: releaseName,
-				releaseTargetCommittish: releaseTargetCommittish,
-				repoCloneUrl: repoCloneUrl,
-				status: 'queueing',
-			});
+				// console.log('New Publish request created!');
+			} else if (payload.ref_type === "tag") {
+				/*
+				"ref": "0.0.9",
+				"ref_type": "tag",
+				"master_branch": "master",
+				*/
+				// New Tag!
+				// console.log("Tag action");
+				var
+				  now = new Date(),
+					releaseName = payload.ref,
+					releaseTargetCommittish = payload.master_branch,
+				  repoCloneUrl = payload.repository.clone_url,
+					tagName = payload.ref
+				;
 
-			// Updates lastSeen field of corresponding hook
-			var knownHook = KnownHooks.findOne({
-				"repoFullName": repoFullName
-			});
-			if (knownHook) {
-				KnownHooks.update(knownHook._id, {
-					$set: {
-						alive: true,
-						lastSeen: new Date()
-					}
+				// Adds the new publish request
+				// documents are in the form:
+				//
+				// {
+				//   createdAt: Date
+				//   publishedAt: Date
+				//   completedAt: Date
+				//   pkgName: String
+				//   tagName: String
+				//   version: String
+				//   arch: String
+				//   status: String ('queueing, successful, errored')
+				//   errors: [String]
+				// }
+				AutoPublish.insert({
+					createdAt: now,
+					publishedAt: now,
+					pkgName: sub.pkgName,
+					tagName: tagName,
+					releaseTargetCommittish: releaseTargetCommittish,
+					repoCloneUrl: repoCloneUrl,
+					status: 'queueing',
 				});
+
+				// console.log('New Publish request created!');
+		  } else if (payload.head_commit) {
+				// console.log('  push action');
+				var
+					repoCommit = payload.head_commit.id,
+					repoName = payload.repository.name,
+					repoUrl = payload.repository.git_url,
+					meteorUser = process.env.METEOR_USER,
+					meteorPwd = process.env.METEOR_PWD;
+
+				// console.log('  commit: ' + repoCommit);
+				// console.log('  name  : ' + repoName);
+				// console.log('  url   : ' + repoUrl);
+
+				//publishPackage(repoUrl, repoName, repoCommit, meteorUser, meteorPwd);
 			}
-
-			// console.log('New Publish request created!');
-		} else if (payload.ref_type === "tag") {
-			/*
-			"ref": "0.0.9",
-			"ref_type": "tag",
-			"master_branch": "master",
-			*/
-			// New Tag!
-			// console.log("Tag action");
-			var
-			  now = new Date(),
-				releaseName = payload.ref,
-				releaseTargetCommittish = payload.master_branch,
-			  repoCloneUrl = payload.repository.clone_url,
-				tagName = payload.ref
-			;
-
-			// Adds the new publish request
-			// documents are in the form:
-			//
-			// {
-			//   createdAt: Date
-			//   publishedAt: Date
-			//   completedAt: Date
-			//   pkgName: String
-			//   tagName: String
-			//   version: String
-			//   arch: String
-			//   status: String ('queueing, successful, errored')
-			//   errors: [String]
-			// }
-			AutoPublish.insert({
-				createdAt: now,
-				publishedAt: now,
-				pkgName: sub.pkgName,
-				tagName: tagName,
-				releaseTargetCommittish: releaseTargetCommittish,
-				repoCloneUrl: repoCloneUrl,
-				status: 'queueing',
-			});
-
-			// Updates lastSeen field of corresponding hook
-			var knownHook = KnownHooks.findOne({
-				"repoFullName": repoFullName
-			});
-			if (knownHook) {
-				KnownHooks.update(knownHook._id, {
-					$set: {
-						alive: true,
-						lastSeen: new Date()
-					}
-				});
-			}
-
-			// console.log('New Publish request created!');
-	  } else if (payload.head_commit) {
-			// console.log('  push action');
-			var
-				repoCommit = payload.head_commit.id,
-				repoName = payload.repository.name,
-				repoUrl = payload.repository.git_url,
-				meteorUser = process.env.METEOR_USER,
-				meteorPwd = process.env.METEOR_PWD;
-
-			// console.log('  commit: ' + repoCommit);
-			// console.log('  name  : ' + repoName);
-			// console.log('  url   : ' + repoUrl);
-
-			//publishPackage(repoUrl, repoName, repoCommit, meteorUser, meteorPwd);
 		}
 	},
 	republish: function(actionId) {

@@ -1,6 +1,6 @@
 'use strict';
 
-Template.repoInfo.created = function(){
+Template.repoInfo.onCreated(function(){
   var self = this;
   self.loading = new ReactiveVar(true);
 
@@ -8,16 +8,16 @@ Template.repoInfo.created = function(){
     id: self.data._id,
     fullName: self.data.full_name,
     gitUrl: self.data.html_url
-  }, function(err, info){
+  }, function(err, repoDetails){
     if (err) {
-      self.data.error = err.error;
+      console.dir(err);
     }
     else {
-      self.data.info = info;
+      self.data.repoDetails = repoDetails;
     }
     self.loading.set(false);
   });
-};
+});
 
 Template.repoInfo.helpers({
   admin: function(){
@@ -27,22 +27,25 @@ Template.repoInfo.helpers({
     return Template.instance().loading.get();
   },
   pkgUrl: function(){
-    var info = this.info;
-    if (info && info.name){
-      var name = info.name.split(':');
+    var repoDetails = this.repoDetails;
+    if (repoDetails && repoDetails.pkgInfo && repoDetails.pkgInfo.name){
+      var name = repoDetails.pkgInfo.name.split(':');
       if (name.length === 2){
         return "https://atmospherejs.com/" + name[0] + "/" + name[1];
       }
     }
   },
   displayName: function(){
-    var info = this.info;
-    if (info){
-      var name =
-        (info.name || 'Meteor Package') +
-        (info.version ? '@' + info.version : '')
-      ;
+    var pkgInfo = this.repoDetails.pkgInfo;
+    if (pkgInfo){
+      var name = pkgInfo.name || 'A Meteor Package?';
+      if (pkgInfo.version) {
+        name += '@' + pkgInfo.version;
+      }
       return name;
+    }
+    else {
+      return 'Not a Meteor pacakge';
     }
   }
 });

@@ -2,36 +2,39 @@
   {{#if loading}}
     <i class="spinner loading icon"></i>
   {{else}}
-    {{#if error}}
-      {{error}}
-    {{else}}
-      <div class="item">
-        <div class="content">
-          {{!-- Header with package name and loading spinner --}}
-          <div class="header">
-            {{#if pkgUrl}}
-              <a href="{{pkgUrl}}" target="_blank">{{displayName}}</a>
-            {{else}}
-              {{displayName}}
+    <div class="item">
+      <div class="content">
+        {{!-- Header with package name and loading spinner --}}
+        <div class="header">
+          {{#if pkgUrl}}
+            <a href="{{pkgUrl}}" target="_blank">{{displayName}}</a>
+          {{else}}
+            {{displayName}}
+          {{/if}}
+          {{#with repoDetails}}
+            {{#if errors}}
+              {{> repoErrors}}
             {{/if}}
-            {{#if info.warnings}}
-              {{#with info}}
-                {{> warnings}}
+          {{/with}}
+          {{#if repoDetails.pkgInfo}}
+            {{#if repoDetails.pkgInfo.warnings}}
+              {{#with repoDetails.pkgInfo}}
+                {{> pkgWarnings}}
               {{/with}}
             {{/if}}
-          </div>
-          {{!-- Toolbar or permissions warning --}}
-          {{#if admin}}
-            <div class="content">
-              <div class="right floated author">
-                {{> repoToggle}}
-              </div>
-            </div>
-          {{else}}
-            <p>Not enough permissions!</p>
           {{/if}}
         </div>
+        {{!-- Toolbar or permissions warning --}}
+        {{#if admin}}
+          <div class="content">
+            <div class="right floated author">
+              {{> repoSettings}}
+            </div>
+          </div>
+        {{else}}
+          <p>Not enough permissions!</p>
+        {{/if}}
       </div>
-    {{/if}}
+    </div>
   {{/if}}
 </template>

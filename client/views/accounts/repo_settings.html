@@ -1,0 +1,18 @@
+<template name="repoSettings">
+  <div class="ui basic fitted segment">
+    {{#if enabled}}
+      {{> settings}}
+    {{/if}}
+    <div class="ui list">
+      {{#if wrapper}}
+        <div class="item">{{> repoWrapper}}</div>
+      {{/if}}
+      {{#if meteorPackage}}
+        <div class="item">{{> repoMeteorPackage}}</div>
+      {{/if}}
+      {{#if webhook}}
+        <div class="item">{{> repoWebhook}}</div>
+      {{/if}}
+    </div>
+  </div>
+</template>
