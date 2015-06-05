@@ -6,8 +6,8 @@ Meteor.startup(function() {
     "service": "github"
   },{
     $set: {
-      "clientId": "XXXXXXXXXXXXXXXXXX",
-      "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      "clientId": Meteor.settings.ghClientId,
+      "secret": Meteor.settings.ghSecret
     }
   }, {
     upsert: true
