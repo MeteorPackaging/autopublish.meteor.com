@@ -41,8 +41,8 @@ regularPublish = function(pkgInfo, callback) {
         // XXX: this should be transformed into a cycle to get machines
         //      for all three architectures when it is the case.
         var buildMachine = new Host(
-          //getMachineResult.machineInfo,
-          Meteor.settings.supportMachine,
+          getMachineResult.machineInfo,
+          // Meteor.settings.supportMachine,
           progress
         );
         buildMachine.connectedMessage = "Connected to remote Build Machine";
@@ -50,12 +50,18 @@ regularPublish = function(pkgInfo, callback) {
         // buildMachine.verbose = true;
 
         // Command sequence
+        buildMachine.addCommand('msg:Initial checks...');
+
+        // Log free memory
+        var cmd = 'free';
+        buildMachine.addCommand(cmd);
+
         actions.checkMeteorVersion(buildMachine);
         actions.loginMeteorUser(buildMachine, userCredentials);
         actions.checkMeteorUser(buildMachine, userCredentials.userName);
 
         // Possibly removes old autopublish folder
-        var cmd = 'rm -rf autopublish';
+        cmd = 'rm -rf autopublish';
         buildMachine.addCommand('msg:Preparing environment...');
         buildMachine.addCommand(cmd);
 
