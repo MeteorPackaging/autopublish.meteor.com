@@ -4,7 +4,7 @@
 'use strict';
 
 
-Template.hookItem.rendered = function() {
+Template.hookItem.onRendered(function() {
   var
     self = this,
     status = 'uncheck';
@@ -14,12 +14,14 @@ Template.hookItem.rendered = function() {
   }
 
   self.$('.ui.checkbox').checkbox(status);
-};
+});
 
-Template.hookItem.created = function() {
+
+Template.hookItem.onCreated(function() {
   var self = this;
   self.updating = new ReactiveVar(false);
-};
+});
+
 
 Template.hookItem.helpers({
   updating: function() {
@@ -47,6 +49,7 @@ Template.hookItem.helpers({
     },
 });
 
+
 Template.hookItem.events({
   'click .ui.checkbox': function(e, instance) {
     e.preventDefault();
@@ -69,11 +72,7 @@ Template.hookItem.events({
   },
   'click #removeHook': function(e){
     e.preventDefault();
-
-    Meteor.call('removeHook',
-      this.hook_id,
-      this.repoFullName
-    );
+    Meteor.call('removeHook', this.repoFullName);
   },
   'click #testHook': function(e){
     e.preventDefault();

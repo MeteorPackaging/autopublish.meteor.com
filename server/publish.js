@@ -179,7 +179,9 @@ Meteor.publish(statsCollectionName, function () {
 
 Meteor.publish('knownhooks', function(){
   if (Roles.userIsInRole(this.userId, ['admin'])) {
-    return KnownHooks.find({}, {
+    return KnownHooks.find({
+      'deleted': {'$ne': true}
+    }, {
       fields: {
         "alive": 1,
         "approved": 1,
