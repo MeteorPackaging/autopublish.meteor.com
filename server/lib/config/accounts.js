@@ -1,3 +1,6 @@
+/* global
+  ServiceConfiguration: false
+*/
 'use strict';
 
 // Set up login services
