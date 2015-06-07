@@ -4,14 +4,28 @@
 'use strict';
 
 // Grants admin rights to the following email addresses.
-var adminEmails = [
-  'ing.luca.mussi@gmail.com',
+var admins = [
+  {
+    email: 'ddascalescu+github@gmail.com',
+    username: 'dandv',
+  },
+  {
+    email: 'ing.luca.mussi@gmail.com',
+    username: 'splendido',
+  },
+  {
+    email: 'simon.r.k.fridlund+github@gmail.com',
+    username: 'zimme',
+  },
 ];
 
-_.each(adminEmails, function(email){
-  var user = Meteor.users.findOne({"emails.address" : email});
-  if (user) {
-    // console.log("Granting admin rights to " + user.profile.login);
+_.each(admins, function(admin){
+  var user = Meteor.users.findOne({
+    "services.github.email" : admin.email,
+    "services.github.username" : admin.username,
+  });
+  if (user && !Roles.userIsInRole(user._id, ['admin'])) {
+    console.log("Granting admin rights to " + user.services.github.username);
     Roles.addUsersToRoles(user._id, ['admin']);
   }
 });
