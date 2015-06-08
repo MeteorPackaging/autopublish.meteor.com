@@ -1,340 +1,13 @@
 /* global
-  github: false,
-  Async: false,
-  Buffer: false,
-  Subscriptions: false,
-  Wrappers: false
+  GithubApi: false,
+  KnownHooks: false,
+  repoUtils: false,
+  Roles: false,
+  subscriptionsUtils: false,
+  wrappersUtils: false
 */
 'use strict';
 
-
-/*
-GitHub API Resources:
-
-https://developer.github.com/v3/repos/hooks/
-https://github.com/mikedeboer/node-github
-http://mikedeboer.github.io/node-github/
-
-- Hooks
-
-http://mikedeboer.github.io/node-github/#repos.prototype.getHook
-http://mikedeboer.github.io/node-github/#repos.prototype.getHooks
-http://mikedeboer.github.io/node-github/#repos.prototype.createHook
-https://developer.github.com/v3/repos/hooks/#create-a-hook
-*/
-
-var
-  hookUrl = Meteor.settings.hookUrl,
-  hookTest = Meteor.settings.hookTest
-;
-
-// Read the package.js file
-// This is a simplified version of the original one from @raix
-// https://raw.githubusercontent.com/raix/Meteor-mrtbulkrelease/master/mrtbulkrelease.js
-var readPackagejs = function(packagejsSource) {
-
-  var empty = function() {};
-  var ret = {
-    warnings: []
-  };
-
-  // Create our own fake Package api
-  var PackageApi = function() {
-
-    var describe = function(obj) {
-      // Check name
-      if (obj.name) {
-        if (obj.name !== obj.name.toLowerCase()) {
-          // Malformed name...
-          ret.warnings.push(
-            'Correct malformed name "' +
-            obj.name +
-            '" into "' +
-            obj.name.toLowerCase() +
-            '"'
-          );
-        }
-        ret.name = obj.name;
-      }
-      else {
-        ret.warnings.push('No name provided');
-      }
-
-      // Check version
-      if (!obj.version) {
-        ret.warnings.push('Missing version');
-      }
-      ret.version = obj.version;
-
-      // Check summary
-      if (!obj.summary) {
-        ret.warnings.push('Missing summary');
-      } else {
-        if (obj.summary.length > 100) {
-          ret.warnings.push(
-            'Summary too long: currently ' +
-            obj.summary.length +
-            ' chars > 100 allowed chars'
-          );
-        }
-      }
-      ret.summary = obj.summary;
-
-      // Check git url...
-      if (!obj.git) {
-        ret.warnings.push('Missing git url');
-      } else {
-        if (!/.git$/.test(obj.git)) {
-          ret.warnings.push('Missing .git in git url');
-        }
-      }
-    };
-
-    var addF = 0;
-    var add_files = function() {
-      if (!addF++) {
-        ret.warnings.push('Use "addFiles" instead of "add_files"');
-      }
-    };
-
-    var onUse = function(f) {
-      f({
-        use: empty,
-        imply: empty,
-        add_files: add_files,
-        addFiles: empty,
-        versionsFrom: empty,
-        export: empty
-      });
-    };
-
-    var onU = 0;
-    var on_use = function(f) {
-      if (!onU++) {
-        ret.warnings.push('Use "onUse" instead of "on_use"');
-      }
-      onUse(f);
-    };
-
-    var onT = 0;
-    var on_test = function(f) {
-      if (!onT++) {
-        ret.warnings.push('Use "onTest" instead of "on_test"');
-      }
-    };
-
-    var regP = 0;
-    var _register_plugin = function() {
-      if (!regP++) {
-        ret.warnings.push(
-          'Use "registerBuildPlugin" instead of' +
-          ' "_transitional_registerBuildPlugin"'
-        );
-      }
-    };
-
-    return {
-      describe: describe,
-      on_test: on_test,
-      onTest: empty,
-      on_use: on_use,
-      onUse: onUse,
-      registerBuildPlugin: empty,
-      _transitional_registerBuildPlugin: _register_plugin
-    };
-  };
-
-  // Create an empty Npm api
-  var NpmApi = {
-    depends: empty,
-    require: empty
-  };
-
-  var CordovaApi = {
-    depends: empty,
-    require: empty
-  };
-
-  var reader = new Function(
-    'return function (Package, Npm, Cordova) {\n' +
-      // body will be the package.js file
-      packagejsSource +
-    '\n};'
-  )();
-  // Run the thing
-  reader(PackageApi(), NpmApi, CordovaApi);
-
-  // Possibly removes empty warning list
-  if (ret.warnings.length === 0) {
-    delete ret.warnings;
-  }
-
-  // Return the result
-  return ret;
-};
-
-
-var getSubscription = function(repoInfo) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  return Subscriptions.findOne({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  });
-};
-
-
-var updateSubscription = function(repoInfo, packageJS, hooks) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  Subscriptions.update({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  }, {$set: {
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-    hookId: hooks[0].id,
-    hookEvents: hooks[0].events,
-    pkgName: packageJS.name,
-    pkgVersion: packageJS.version,
-    pkgSummary: packageJS.summary,
-    gitUrl: repoInfo.gitUrl,
-  }}, {
-    upsert: true
-  });
-};
-
-
-var removeSubscription = function(repoInfo) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  Subscriptions.remove({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  });
-};
-
-
-var getWrapper = function(repoInfo) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  return Wrappers.findOne({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  });
-};
-
-
-var updateWrapper = function(repoInfo, packageJS, hooks) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  Wrappers.update({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  }, {$set: {
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-    hookId: hooks[0].id,
-    hookEvents: hooks[0].events,
-    pkgName: packageJS.name,
-    pkgVersion: packageJS.version,
-    pkgSummary: packageJS.summary,
-    gitUrl: repoInfo.gitUrl,
-  }}, {
-    upsert: true
-  });
-};
-
-
-var removeWrapper = function(repoInfo) {
-  var repoFullName = repoInfo.fullName.split('/');
-
-  Wrappers.remove({
-    user: repoFullName[0],
-    repo: repoFullName[1],
-    repoId: repoInfo.id,
-  });
-};
-
-
-var getHooks = function(repoInfo, errors) {
-  var
-    hooks = null,
-    hooksReq = null,
-    // Full name must be in the form 'user/repoName' or 'org/repoName'
-    // Splits user and repo name
-    repoFullName = repoInfo.fullName.split('/')
-  ;
-  // Get the list of hooks for the requested repository
-  hooksReq = Async.runSync(function(done) {
-    github.repos.getHooks({
-      user: repoFullName[0],
-      repo: repoFullName[1],
-    }, function(err, data) {
-      done(null, data);
-    });
-  });
-  if (hooksReq.result) {
-    // Filter hook to keep only those pointing to autopublish.meteor.com
-    var testRe = new RegExp(hookTest);
-    try {
-      hooks = _.chain(hooksReq.result)
-        .filter(function(hook){
-          if (hook.name === 'web' && hook.config) {
-            return testRe.test(hook.config.url);
-          }
-        })
-        .value();
-    }
-    catch(err) {
-      hooks = null;
-      errors.push('Some problem occured while reading webhooks!');
-    }
-    // Check there's at least one hook, otherwise set hook to null
-    if (hooks && hooks.length === 0) {
-      hooks = null;
-    }
-  }
-
-  return hooks;
-};
-
-
-var removeWebhooks = function(repoInfo, hooks, errors) {
-  var
-    // Full name must be in the form 'user/repoName' or 'org/repoName'
-    // Splits user and repo name
-    repoFullName = repoInfo.fullName.split('/')
-  ;
-
-  // deletes all hooks one by one
-  try {
-    _.each(hooks, function(hook){
-      var d = Async.runSync(function(done) {
-        github.repos.deleteHook({
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          id: hook.id,
-        }, function(err, data) {
-          done(null, data);
-        });
-      });
-      if (!d.result){
-        errors.push(d.err);
-      }
-    });
-  }
-  catch(err) {
-    errors.push('Some problem occured while removing webhooks!');
-  }
-};
 
 Meteor.methods({
   getRepoDetails: function(repoInfo) {
@@ -342,23 +15,26 @@ Meteor.methods({
     // start in a new fiber without waiting this one to complete
     this.unblock();
 
+    // Only logged in users can get repo details...
+    if (!this.userId) {
+      return {errors: ['Please login first...']};
+    }
+
     var
       user = Meteor.users.findOne(this.userId),
       autopublishJSON = null,
-      ajReq = null,
       errors = [],
       ghs = user && user.services && user.services.github,
+      github = new GithubApi({version: "3.0.0"}),
       hooks = null,
-      hooksReq = null,
+      knownHook = null,
       packageJS = null,
-      pjReq = null,
       repoDetails = {},
       // Full name must be in the form 'user/repoName' or 'org/repoName'
       // Splits user and repo name
       repoFullName = repoInfo.fullName.split('/'),
       token = ghs && ghs.accessToken
     ;
-
 
 
     // We have three options here:
@@ -375,8 +51,6 @@ Meteor.methods({
     //    this repo cannot be auto-published in any way!
     //    ...but a webhook from it could be created to publish other packages...
 
-
-
     // Possibly authenticate the current user
     if (token) {
       github.authenticate({
@@ -387,123 +61,161 @@ Meteor.methods({
 
     // Possibly read 'autopublish.json' from the repository's root folder
     if (repoFullName[0] === 'MeteorPackaging') {
-      ajReq = Async.runSync(function(done) {
-        github.repos.getContent({
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          path: 'autopublish.json',
-        }, function(err, data) {
-          done(null, data);
-        });
-      });
-      if (ajReq.result) {
-        try {
-          autopublishJSON = new Buffer(ajReq.result.content, 'base64');
-          autopublishJSON = autopublishJSON.toString('utf8');
-          autopublishJSON = JSON.parse(autopublishJSON);
-        }
-        catch(err) {
-          autopublishJSON = null;
-          errors.push('Some problem occured while reading autopublish.json!');
-        }
-      }
+      autopublishJSON = repoUtils.getAutopublishJSON(github, repoInfo, errors);
     }
 
     // Possibly read 'package.js' from the repository's root folder
-    pjReq = Async.runSync(function(done) {
-      github.repos.getContent({
-        user: repoFullName[0],
-        repo: repoFullName[1],
-        path: 'package.js',
-      }, function(err, data) {
-        done(null, data);
-      });
-    });
-    if (pjReq.result) {
-      try {
-        packageJS = new Buffer(pjReq.result.content, 'base64');
-        packageJS = packageJS.toString('utf8');
-        packageJS = readPackagejs(packageJS);
-      }
-      catch(err) {
-        packageJS = null;
-        errors.push('Some problem occured while reading package.js!');
-      }
+    packageJS = repoUtils.getPackageJS(github, repoInfo, errors);
+    if (packageJS) {
+      repoInfo.pkgName = packageJS.name;
+      repoInfo.pkgVersion = packageJS.version;
+      repoInfo.pkgSummary = packageJS.summary;
     }
 
     // Get the list of hooks for the requested repository
-    hooks = getHooks(repoInfo, errors);
+    hooks = repoUtils.getHooks(github, repoInfo, errors);
 
-    // Possibly attach existing hook details
-    if (hooks) {
-      repoDetails.hooks = hooks;
+    // Check whether there's a KnownHook document for this repo
+    knownHook = KnownHooks.findOne({
+      repoFullName: repoInfo.fullName,
+      deleted: {'$ne': true},
+    });
+
+    // Mark corresponding known hook as deleted in case there's
+    // no more hooks on the repository
+    if (knownHook && !hooks) {
+      KnownHooks.update(knownHook._id, {$set: {deleted: true}});
+      knownHook = null;
     }
+
+    // Set webhook status
+    repoDetails.webhookEnabled = !!knownHook;
+
+    if (autopublishJSON && packageJS) {
+      // this repo is a MeteorPackaging wrapper
+      repoDetails.pkgInfo = packageJS;
+      repoDetails.wrapper = autopublishJSON || {};
+      console.log('getRepoDetails');
+      console.dir(repoInfo);
+      console.dir(autopublishJSON);
+      console.dir(packageJS);
+
+      var wrapper = wrappersUtils.get(repoInfo);
+      if (wrapper && !wrapper.deleted) {
+        repoDetails.wrapper.enabled = true;
+      }
+      // console.log('Wrapper package: ' + repoFullName[1]);
+      // console.dir(repoDetails);
+    }
+    else if (packageJS) {
+      // this repo is a Meteor package
+      repoDetails.pkgInfo = packageJS;
+
+      var subscription = subscriptionsUtils.get(repoInfo);
+      if (subscription && !subscription.deleted) {
+        subscriptionsUtils.upsert(repoInfo, user);
+        repoDetails.pkgInfo.enabled = true;
+      }
+    }
+    /*
+    else {
+      // this repo is a normal repo not directly related with Meteor
+    }
+    */
 
     // Possibly attach erros details
     if (errors.length > 0) {
       repoDetails.errors = errors;
     }
 
-    if (autopublishJSON && packageJS) {
-      // this repo is a MeteorPackaging wrapper
-      repoDetails.pkgInfo = packageJS;
-      repoDetails.wrapper = autopublishJSON;
-
-      var wrapper = getWrapper(repoInfo);
-      if (wrapper) {
-        repoDetails.enabled = true;
-      }
-      console.log('Wrapper package: ' + repoFullName[1]);
-      console.dir(repoDetails);
-    }
-    else if (packageJS) {
-      // this repo is a Meteor package
-      repoDetails.pkgInfo = packageJS;
-
-      // Possibly Update/Remove the Subscription document
-      if (hooks){
-        updateSubscription(repoInfo, packageJS, hooks);
-      }
-      else {
-        removeSubscription(repoInfo);
-      }
-
-      var subscription = getSubscription(repoInfo);
-      if (subscription) {
-        repoDetails.pkgInfo.enabled = true;
-      }
-    }
-    else {
-      // this repo is a normal repo not directly related with Meteor
-      if (hooks) {
-        repoDetails.enabled = true;
-      }
-    }
-
     return repoDetails;
   },
+
   toggleMeteorPackage: function(repoInfo){
     // Since this is not a blocking method, tells the next method calls can
     // start in a new fiber without waiting this one to complete
     this.unblock();
 
+    // Only logged in users can toggle subscriptions...
+    if (!this.userId) {
+      return {errors: ['Please login first...']};
+    }
+
+    console.log('toggleMeteorPackage');
+    console.dir(repoInfo);
+
+
     var
+      // Array of possible errors to appear during toggle operations
+      errors = [],
+      // Result object to return
+      ret = {},
+      subscription = null,
+      user = Meteor.users.findOne(this.userId)
+    ;
+
+    // If there's already a subscription for this repository
+    subscription = subscriptionsUtils.get(repoInfo);
+    if (subscription && !subscription.deleted){
+      try {
+        // Mark the old subscription as deleted
+        subscriptionsUtils.delete(repoInfo, user);
+        ret.enabled = false;
+      }
+      catch(err) {
+        errors.push('Some error occured while deleting subscription!');
+      }
+    }
+    else {
+      // Check whether there's already a corresposnding known hook...
+      var knownHook = KnownHooks.findOne({
+        repoFullName: repoInfo.fullName,
+        deleted: {'$ne': true},
+      });
+      if (knownHook) {
+        try {
+          // Creates a new subscription
+          subscriptionsUtils.upsert(repoInfo, user);
+          ret.enabled = true;
+        }
+        catch(err) {
+          errors.push('Some error occured while creating subscription!');
+        }
+      }
+      else {
+        errors.push('No hook found, please create a webhook first!');
+      }
+    }
+
+    // Possibly adds errors to the resutl object
+    if (errors.length > 0) {
+      ret.errors = errors;
+    }
+    return ret;
+  },
+
+  toggleWebhook: function(repoInfo, enabled){
+    // Since this is not a blocking method, tells the next method calls can
+    // start in a new fiber without waiting this one to complete
+    this.unblock();
+
+    // Only logged in users can toggle webhooks...
+    if (!this.userId) {
+      return {errors: ['Please login first...']};
+    }
+
+    var
+      // Array of possible errors to appear during toggle operations
+      errors = [],
+      github = new GithubApi({version: "3.0.0"}),
+      hooks = null,
+      // Result object to return
+      ret = {},
       user = Meteor.users.findOne(this.userId),
       ghs = user && user.services && user.services.github,
       token = ghs && ghs.accessToken
     ;
 
-    // Full name must be in the form 'user/repoName' or 'org/repoName'
-    // Splits user and repo name
-    var
-      repoFullName = repoInfo.fullName.split('/'),
-      repoId = repoInfo.id,
-      gitUrl = repoInfo.gitUrl,
-      pkgName = repoInfo.pkgName,
-      pkgVersion = repoInfo.pkgVersion,
-      pkgSummary = repoInfo.pkgSummary
-    ;
-
     if (token) {
       github.authenticate({
         type: "oauth",
@@ -511,91 +223,29 @@ Meteor.methods({
       });
     }
 
-    // Array of possible errors to appear during toggle operations
-    var errors = [];
-    // Result object to return
-    var ret = {};
-
-
     // Get the list of hooks for the requested repository
-    var hooks = getHooks(repoInfo, errors);
-
-    // In case there is at least one...
-    // ...deletes 'all' existing hooks
+    hooks = repoUtils.getHooks(github, repoInfo, errors);
+    // Delete 'all' existing hooks
     if (hooks){
-      // In case there is at least one...
-      // ...deletes 'all' existing hooks
-      _.each(hooks, function(hook){
-        var d = Async.runSync(function(done) {
-          github.repos.deleteHook({
-            user: repoFullName[0],
-            repo: repoFullName[1],
-            id: hook.id,
-          }, function(err, data) {
-            done(null, data);
-          });
-        });
-        if (!d.result){
-          errors.push(d.err);
-        }
-      });
+      repoUtils.removeWebhooks(github, repoInfo, hooks, errors);
+    }
 
-      // Possibly removes old subscriptions
-      Subscriptions.remove({
-        user: repoFullName[0],
-        repo: repoFullName[1],
-        repoId: repoId,
-      });
-
-      ret.enabled = false;
+    if (enabled) {
+      var hook = repoUtils.createHook(github, repoInfo, errors);
+      if (hook) {
+        ret.hookId = hook.id;
+        ret.enabled = true;
+      }
     }
     else {
-      // Otherwise creates a new hook
-      var d = Async.runSync(function(done) {
-        github.repos.createHook({
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          name: 'web',
-          config: {
-            url: hookUrl,
-            content_type: "json",
-          },
-          // XXX: TODO: It seems that with both "create" and "release"
-          //            we get two triggers...
-          //            Options needed to select which one to listen to!
-          //events: ["create", "release"],
-          events: ["release"],
-          active: true,
-        }, function(err, data) {
-          done(null, data);
-        });
+      var knownHook = KnownHooks.findOne({
+        repoFullName: repoInfo.repoFullName,
+        deleted: {'$ne': true},
       });
-      if (!d.result){
-        errors.push(d.err);
+      if (knownHook) {
+        KnownHooks.update(knownHook._id, {$set: {deleted: true}});
       }
-      else{
-        ret.hookId = d.result.id;
-        ret.enabled = true;
-
-        // Adds the Subscription document
-        Subscriptions.update({
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          repoId: repoId,
-        }, {$set: {
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          repoId: repoId,
-          hookId: d.result.id,
-          hookEvents: d.result.events,
-          pkgName: pkgName,
-          pkgVersion: pkgVersion,
-          pkgSummary: pkgSummary,
-          gitUrl: gitUrl,
-        }}, {
-          upsert: true
-        });
-      }
+      ret.enabled = false;
     }
 
     // Possibly adds errors to the resutl object
@@ -604,68 +254,66 @@ Meteor.methods({
     }
     return ret;
   },
-  toggleWebhook: function(repoInfo){
+
+  toggleWrapper: function(repoInfo, enabled){
     // Since this is not a blocking method, tells the next method calls can
     // start in a new fiber without waiting this one to complete
     this.unblock();
 
+    // Checks the user is an admin
+    if (!Roles.userIsInRole(this.userId, ['admin'])) {
+      return {errors: ['Only admins can toggle wrapper packages...']};
+    }
+
+    console.log('Toggling wrapper');
+    console.dir(enabled);
+    console.dir(repoInfo);
+
     var
-      user = Meteor.users.findOne(this.userId),
-      ghs = user && user.services && user.services.github,
-      token = ghs && ghs.accessToken,
       // Array of possible errors to appear during toggle operations
       errors = [],
-      // Result object to return
-      ret = {},
-      hooks = null,
+      github = new GithubApi({version: "3.0.0"}),
       // Full name must be in the form 'user/repoName' or 'org/repoName'
       // Splits user and repo name
-      repoFullName = repoInfo.fullName.split('/')
+      repoFullName = repoInfo.fullName.split('/'),
+      // Result object to return
+      ret = {},
+      wrapInfo = null,
+      wrapper = null,
+      user = Meteor.users.findOne(this.userId)
     ;
 
-    if (token) {
-      github.authenticate({
-        type: "oauth",
-        token: token
-      });
-    }
+    // If there's already a wrapper for this repository
+    wrapper = wrappersUtils.get(repoInfo);
 
-    // Get the list of hooks for the requested repository
-    hooks = getHooks(repoInfo, errors);
+    if (enabled) {
+      // Possibly read 'autopublish.json' from the repository's root folder
+      if (repoFullName[0] === 'MeteorPackaging') {
+        wrapInfo = repoUtils.getAutopublishJSON(github, repoInfo, errors);
 
-    // In case there is at least one...
-    // ...deletes 'all' existing hooks
-    if (hooks){
-      removeWebhooks(repoInfo, hooks, errors);
-      ret.enabled = false;
+        try {
+          // Creates a new wrapper
+          wrappersUtils.upsert(repoInfo, wrapInfo, user);
+          ret.enabled = true;
+        }
+        catch(err) {
+          errors.push('Some error occured while creating wrapper!');
+        }
+      }
+      else {
+        errors.push('Only wrapper repositories under MeteorPackaging allowed!');
+      }
     }
     else {
-      // Otherwise creates a new hook
-      var d = Async.runSync(function(done) {
-        github.repos.createHook({
-          user: repoFullName[0],
-          repo: repoFullName[1],
-          name: 'web',
-          config: {
-            url: hookUrl,
-            content_type: "json",
-          },
-          // XXX: TODO: It seems that with both "create" and "release"
-          //            we get two triggers...
-          //            Options needed to select which one to listen to!
-          //events: ["create", "release"],
-          events: ["release"],
-          active: true,
-        }, function(err, data) {
-          done(null, data);
-        });
-      });
-      if (!d.result){
-        errors.push(d.err);
-      }
-      else{
-        ret.hookId = d.result.id;
-        ret.enabled = true;
+      if (wrapper){
+        try {
+          // Mark the old wrapper as deleted
+          wrappersUtils.delete(repoInfo, user);
+          ret.enabled = false;
+        }
+        catch(err) {
+          errors.push('Some error occured while deleting wrapper!');
+        }
       }
     }
 
@@ -675,25 +323,5 @@ Meteor.methods({
     }
     return ret;
   },
-  toggleWrapper: function(repoInfo){
-    // Since this is not a blocking method, tells the next method calls can
-    // start in a new fiber without waiting this one to complete
-    this.unblock();
 
-    var
-      // Array of possible errors to appear during toggle operations
-      errors = [],
-      // Result object to return
-      ret = {}
-    ;
-
-    // TODO: actually write creation/deletion of Wrapper document!
-    ret.enabled = false;
-
-    // Possibly adds errors to the resutl object
-    if (errors.length > 0) {
-      ret.errors = errors;
-    }
-    return ret;
-  }
 });

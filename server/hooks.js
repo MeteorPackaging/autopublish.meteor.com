@@ -1,5 +1,5 @@
 /* global
-    github: false,
+    GithubApi: false,
     KnownHooks: false,
     processHookPingEvent: true,
     Roles: false
@@ -10,7 +10,6 @@
 
 processHookPingEvent = function(ping) {
   'use strict';
-
 
   var
     hookDoc = _.pick(ping, 'hook_id', 'hook'),
@@ -42,12 +41,15 @@ processHookPingEvent = function(ping) {
     if (hook.deleted) {
       // mark it as a new hook anyway...
       newHook = true;
+      hookDoc.approved = false;
     }
     // already known hook...
     KnownHooks.update(hook._id, {$set: hookDoc});
   }
   else {
     // new hook!
+    newHook = true;
+    hookDoc.approved = false;
     KnownHooks.insert(hookDoc);
   }
 
@@ -56,8 +58,9 @@ processHookPingEvent = function(ping) {
   if (newHook) {
 
     var
-      userCredentials = Meteor.settings.defaultGitHubUser,
-      newHookIssueDetails = _.clone(Meteor.settings.issues.newHook)
+      github = new GithubApi({version: "3.0.0"}),
+      newHookIssueDetails = _.clone(Meteor.settings.issues.newHook),
+      userCredentials = Meteor.settings.defaultGitHubUser
     ;
 
     // Adds the body for the issue
@@ -89,10 +92,21 @@ Meteor.methods({
     // start in a new fiber without waiting this one to complete
     this.unblock();
 
+    var
+      // Array of possible errors to appear during toggle operations
+      errs = [],
+      // Result object to return
+      ret = {}
+    ;
+
     // Checks the user is an admin
     if (Roles.userIsInRole(this.userId, ['admin'])) {
+      var
+        github = new GithubApi({version: "3.0.0"}),
+        hook = KnownHooks.findOne({"repoFullName": repoFullName})
+      ;
+
       // Checks the requested hook exists
-      var hook = KnownHooks.findOne({"repoFullName": repoFullName});
       if (hook) {
         var userCredentials = Meteor.settings.defaultGitHubUser;
 
@@ -114,7 +128,18 @@ Meteor.methods({
         });
       }
     }
+    else {
+      errs.push('You need admin right to test a hook!');
+    }
+
+    // Possibly adds errors to the result object
+    if (errs.length > 0) {
+      ret.errs = errs;
+    }
+
+    return ret;
   },
+
   toggleApproveHook: function(hookId, repoFullName){
     'use strict';
 
@@ -123,17 +148,21 @@ Meteor.methods({
     this.unblock();
 
     var
-      // Approval status
-      approved = null,
       // Array of possible errors to appear during toggle operations
       errs = [],
-      hook = null,
+      // Approval status
+      isApproved = null,
       // Result object to return
       ret = {}
     ;
 
     // Checks the user is an admin
     if (Roles.userIsInRole(this.userId, ['admin'])) {
+      var
+        hook = null,
+        user = Meteor.users.findOne(this.userId)
+      ;
+
       // Checks the requested hook exists
       hook = KnownHooks.findOne({
         hook_id: hookId,
@@ -141,12 +170,23 @@ Meteor.methods({
       });
 
       if (hook) {
-        approved = !hook.approved;
-        KnownHooks.update(hook._id, {
-          $set: {
-            "approved": approved
-          }
-        });
+        isApproved = !hook.approved;
+
+        var newAttrs = {
+          approved: isApproved,
+        };
+
+        if (isApproved) {
+          newAttrs.approvedAt = new Date();
+          newAttrs.approvedBy = user.profile.login;
+        }
+        else {
+          newAttrs.disapprovedAt = new Date();
+          newAttrs.disapprovedBy = user.profile.login;
+        }
+
+        KnownHooks.update(hook._id, {$set: newAttrs});
+
       } else {
         errs.push('Hook ' + hookId + ' does not exists!');
       }
@@ -159,7 +199,7 @@ Meteor.methods({
     if (errs.length > 0) {
       ret.errs = errs;
     } else {
-      ret.approved = approved;
+      ret.approved = isApproved;
     }
     return ret;
   },
@@ -170,6 +210,13 @@ Meteor.methods({
     // start in a new fiber without waiting this one to complete
     this.unblock();
 
+    var
+      // Array of possible errors to appear during toggle operations
+      errs = [],
+      // Result object to return
+      ret = {}
+    ;
+
     // Checks the user is an admin
     if (Roles.userIsInRole(this.userId, ['admin'])) {
       // Checks the requested hook exists
@@ -178,5 +225,15 @@ Meteor.methods({
         KnownHooks.update(hook._id, {$set: {deleted: true}});
       }
     }
+    else {
+      errs.push('You need admin right to remove a hook!');
+    }
+
+    // Possibly adds errors to the result object
+    if (errs.length > 0) {
+      ret.errs = errs;
+    }
+
+    return ret;
   }
 });

@@ -1,5 +1,3 @@
-'use strict';
-
 /* global
     AutoPublish: false,
     completedSelector: false,
@@ -8,9 +6,10 @@
     oldestQueueing: false,
     queueingSelector: false,
     Roles: false,
-    SearchSource: false,
     Subscriptions: false
 */
+'use strict';
+
 
 Meteor.publish('queueingPublish', function(limit){
   check(limit, Number);
@@ -30,6 +29,7 @@ Meteor.publish('queueingPublish', function(limit){
     )
   );
 });
+
 
 Meteor.publish('completedPublish', function(limit){
   check(limit, Number);
@@ -51,18 +51,23 @@ Meteor.publish('completedPublish', function(limit){
   );
 });
 
+
 Meteor.publish('subscriptions', function(limit){
   check(limit, Number);
-  return Subscriptions.find({}, {
+  return Subscriptions.find({
+    deleted: {'$ne': true}
+  }, {
     limit: limit,
     sort: {pkgName: 1},
     fields: {
+      createdAt: 0,
+      createdBy: 0,
       hookEvents: 0,
       hookId: 0,
       repo: 0,
       repoId: 0,
       tested: 0,
-      user: 0
+      user: 0,
     }
   });
 });
@@ -90,31 +95,61 @@ Meteor.publish(statsCollectionName, function () {
   // `self.changed()` messages - hence tracking the
   // `initializing` state.
   var subsHandle = Subscriptions.find().observeChanges({
-    added: function () {
-      subsCount++;
-      if (!initializing) {
-        self.changed(statsCollectionName, objId, {subsCount: subsCount});
+    added: function (id, fields) {
+      if (!('deleted' in fields) || !fields.deleted) {
+        subsCount++;
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {subsCount: subsCount});
+        }
       }
     },
+    // We should never remove documents from Subscriptions...
     removed: function () {
       subsCount--;
       self.changed(statsCollectionName, objId, {subsCount: subsCount});
+    },
+    changed: function(id, fields) {
+      if ('deleted' in fields) {
+        if (!!fields.deleted) {
+          subsCount--;
+        }
+        else {
+          subsCount++;
+        }
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {subsCount: subsCount});
+        }
+      }
     }
-    // don't care about changed
   });
 
   var hooksHandle = KnownHooks.find().observeChanges({
-    added: function () {
-      hooksCount++;
-      if (!initializing) {
-        self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
+    added: function (id, fields) {
+      if (!('deleted' in fields) || !fields.deleted) {
+        hooksCount++;
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
+        }
       }
     },
+    // We should never remove documents from KnownHooks...
     removed: function () {
       hooksCount--;
       self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
+    },
+    changed: function(id, fields) {
+      if ('deleted' in fields) {
+        if (!!fields.deleted) {
+          hooksCount--;
+        }
+        else {
+          hooksCount++;
+        }
+        if (!initializing) {
+          self.changed(statsCollectionName, objId, {hooksCount: hooksCount});
+        }
+      }
     }
-    // don't care about changed
   });
 
   var autopubHandle = AutoPublish.find().observe({
@@ -180,15 +215,15 @@ Meteor.publish(statsCollectionName, function () {
 Meteor.publish('knownhooks', function(){
   if (Roles.userIsInRole(this.userId, ['admin'])) {
     return KnownHooks.find({
-      'deleted': {'$ne': true}
+      deleted: {'$ne': true}
     }, {
       fields: {
-        "alive": 1,
-        "approved": 1,
-        "hook_id": 1,
-        "repoFullName": 1,
-        "lastSeen": 1,
-        "lastTested": 1,
+        alive: 1,
+        approved: 1,
+        hook_id: 1,
+        repoFullName: 1,
+        lastSeen: 1,
+        lastTested: 1,
       }
     });
   }

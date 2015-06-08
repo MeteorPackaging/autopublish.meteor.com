@@ -77,7 +77,6 @@ Template.hookItem.events({
   'click #testHook': function(e){
     e.preventDefault();
 
-    console.log("Test hook " + this.hook_id);
     Meteor.call('testHook',
       this.hook_id,
       this.repoFullName

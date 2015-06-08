@@ -8,11 +8,9 @@
 
 Meteor.methods({
   processPublishRequest: function(payload) {
-    /*
-    console.log('Received publish request');
-    console.log('Payload:');
-    console.dir(payload);
-    */
+    // console.log('Received publish request');
+    // console.log('Payload:');
+    // console.dir(payload);
 
     // Stores the received payload into the requests log...
     HookPayloads.insert({
@@ -48,6 +46,7 @@ Meteor.methods({
     if (sub) {
       if (payload.hook) {
         // Test Payload
+        /*
         var hookId = payload.hook_id;
 
         // Simply sets 'tested' field to true
@@ -64,6 +63,7 @@ Meteor.methods({
             "Invalid hook id! Try disabling/re-enabling autopublish..."
           );
         }
+        */
       } else if (payload.action === 'published' && payload.release) {
         // console.log('  release action');
         // New Release!

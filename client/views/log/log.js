@@ -9,10 +9,6 @@ Template.Log.onCreated(function () {
 		logId = Router.current().params._id
 	;
 
-	console.log('Template Log');
-	console.dir(Router.current().params);
-	console.log(logId);
-
 	self.logId = logId;
 
   // Use this.subscribe inside onCreated callback
@@ -27,7 +23,6 @@ Template.Log.helpers({
 			log = AutoPublish.findOne(logId)
 		;
 
-		console.dir(log);
 		return log;
 	}
 });

@@ -5,15 +5,12 @@ Template.repoMeteorPackage.onRendered(function(){
     self = this,
     repoDetails = self.data.repoDetails
   ;
+
   if (repoDetails && repoDetails.pkgInfo && repoDetails.pkgInfo.enabled){
-    self.$('.ui.checkbox')
-      .checkbox('check')
-    ;
+    self.$('.ui.checkbox').checkbox('check');
   }
   else {
-    self.$('.ui.checkbox')
-      .checkbox('uncheck')
-    ;
+    self.$('.ui.checkbox').checkbox('uncheck');
   }
 });
 
@@ -35,8 +32,6 @@ Template.repoMeteorPackage.events({
       pkgInfo = data.repoDetails && data.repoDetails.pkgInfo
     ;
 
-    console.dir(data);
-    console.dir(pkgInfo);
     if (pkgInfo) {
       instance.updating.set(true);
       Meteor.call('toggleMeteorPackage', {
@@ -49,7 +44,7 @@ Template.repoMeteorPackage.events({
       }, function(err, result){
         instance.updating.set(false);
         if (result.enabled !== undefined){
-          instance.data.enabled = result.enabled;
+          instance.data.repoDetails.pkgInfo.enabled = result.enabled;
           var status = 'uncheck';
           if (result.enabled){
             status = 'check';

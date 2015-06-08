@@ -74,6 +74,10 @@ actions.checkMeteorVersion = function(machine) {
 };
 
 
+actions.checkPackageName = function(machine, pkgInfo) {
+  // meteor show packaging:autopublish-test | grep `pwd` | awk '{print $1;}'
+};
+
 actions.done = function(machine, pkgInfo) {
   // Double checks by running 'meteor show'
   // end eventually marks the publish action as *completed*!

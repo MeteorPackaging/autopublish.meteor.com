@@ -1,13 +1,14 @@
 /* global
     Async: false,
     Accounts: false,
-    github: false
+    GithubApi: false
 */
 'use strict';
 
 Accounts.onCreateUser(function(options, user) {
   var
     ghs = user.services.github,
+    github = new GithubApi({version: "3.0.0"}),
     email = ghs && ghs.email,
     token = ghs && ghs.accessToken
   ;
