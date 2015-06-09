@@ -75,7 +75,39 @@ actions.checkMeteorVersion = function(machine) {
 
 
 actions.checkPackageName = function(machine, pkgInfo) {
-  // meteor show packaging:autopublish-test | grep `pwd` | awk '{print $1;}'
+
+  // Runs 'meteor show' and checks the current package name currently matches
+  // the expected one:
+  // this should prevent attemps to publishing packages with a different name
+  // wrt the one for which they where registered to autopublish!
+
+  var cmd = "meteor show " +
+            pkgInfo.pkgName +
+            " | grep `pwd` | awk '{print $1;}'";
+
+  var afterPublishCallback = function(response, hostObj) {
+    if (machine.verbose) {
+      console.log("checkPackageName:");
+      console.dir(response);
+    }
+    if (!response) {
+      // Not reason to proceed, and attack is under attempt?!
+      hostObj.result.success = false;
+      hostObj.errors.push("Invalid package name!");
+      this.endCommands();
+    }
+    else {
+      machine.addCommandToFront(
+        "msg:Package name is correct! " +
+        "Publishing version " + response + "!"
+      );
+    }
+  };
+  machine.addCommand(cmd);
+  machine.addCompleteAction({
+    cmd: cmd,
+    callback: afterPublishCallback
+  });
 };
 
 actions.done = function(machine, pkgInfo) {
@@ -255,6 +287,7 @@ actions.meteorPublish = function(machine, pkgInfo) {
       }
     }
   };
+  machine.addCommand('msg:Running publish for ' + pkgInfo.pkgName + '...');
   machine.addCommand(cmd);
   machine.addCompleteAction({
     cmd: cmd,

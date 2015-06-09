@@ -90,10 +90,12 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.addCommand('msg:Done!');
         actions.checkoutTag(buildMachine, pkgInfo);
 
+        // Check the package name to make sure it matches the correct one
+        // this is to prevent attacks trying to publish with different names
+        // than the registered one!
+        actions.checkPackageName(buildMachine, pkgInfo);
+
         // Runs 'meteor publish'
-        buildMachine.addCommand(
-          'msg:Running publish for ' + pkgInfo.pkgName + '...'
-        );
         actions.meteorPublish(buildMachine, pkgInfo);
 
 
