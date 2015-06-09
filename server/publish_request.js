@@ -37,6 +37,11 @@ Meteor.methods({
     ;
     // console.log('Repository: ' + repoName);
 
+    // Checks whether the hook is already known
+    var hook = KnownHooks.findOne({
+      'repoFullName': repoFullName
+    });
+
     // Looks for a valid subscription
     var sub = Subscriptions.findOne({
       repo: repoName,
@@ -44,6 +49,8 @@ Meteor.methods({
     });
 
     if (sub) {
+      // TODO: check subscription for approval!
+
       if (payload.hook) {
         // Test Payload
         /*
@@ -77,29 +84,48 @@ Meteor.methods({
           repoCloneUrl = repository.clone_url
         ;
 
-        // Adds the new publish request
-        // documents are in the form:
-        //
-        // {
-        //   createdAt: Date
-        //   completedAt: Date
-        //   packageName: String
-        //   version: String
-        //   arch: String
-        //   status: String ('queueing, successful, errored')
-        //  error: String
-        // }
-        AutoPublish.insert({
-          createdAt: new Date(),
-          publishedAt: publishedAt,
-          pkgName: sub.pkgName,
-          tagName: tagName,
-          releaseName: releaseName,
-          releaseTargetCommittish: releaseTargetCommittish,
-          repoCloneUrl: repoCloneUrl,
-          status: 'queueing',
-        });
+        if (hook.approved) {
+          // Adds the new publish request
+          // documents are in the form:
+          //
+          // {
+          //   createdAt: Date
+          //   completedAt: Date
+          //   packageName: String
+          //   version: String
+          //   arch: String
+          //   status: String ('queueing, successful, errored')
+          //  error: String
+          // }
+          AutoPublish.insert({
+            createdAt: new Date(),
+            publishedAt: publishedAt,
+            pkgName: sub.pkgName,
+            tagName: tagName,
+            releaseName: releaseName,
+            releaseTargetCommittish: releaseTargetCommittish,
+            repoCloneUrl: repoCloneUrl,
+            status: 'queueing',
+          });
+        }
+        else {
+          // TODO: signal unapproved hook by creating a new issue somewhere...
+          console.log('Got unapproved hook!');
 
+          AutoPublish.insert({
+            createdAt: new Date(),
+            publishedAt: publishedAt,
+            pkgName: sub.pkgName,
+            tagName: tagName,
+            releaseName: releaseName,
+            releaseTargetCommittish: releaseTargetCommittish,
+            repoCloneUrl: repoCloneUrl,
+            errors: [
+              'Hook was not yet approved!'
+            ],
+            status: 'errored',
+          });
+        }
         // console.log('New Publish request created!');
       } else if (payload.ref_type === "tag") {
         /*
@@ -117,30 +143,49 @@ Meteor.methods({
           tagName = payload.ref
         ;
 
-        // Adds the new publish request
-        // documents are in the form:
-        //
-        // {
-        //   createdAt: Date
-        //   publishedAt: Date
-        //   completedAt: Date
-        //   pkgName: String
-        //   tagName: String
-        //   version: String
-        //   arch: String
-        //   status: String ('queueing, successful, errored')
-        //   errors: [String]
-        // }
-        AutoPublish.insert({
-          createdAt: now,
-          publishedAt: now,
-          pkgName: sub.pkgName,
-          tagName: tagName,
-          releaseTargetCommittish: releaseTargetCommittish,
-          repoCloneUrl: repoCloneUrl,
-          status: 'queueing',
-        });
+        if (hook.approved) {
+          // Adds the new publish request
+          // documents are in the form:
+          //
+          // {
+          //   createdAt: Date
+          //   publishedAt: Date
+          //   completedAt: Date
+          //   pkgName: String
+          //   tagName: String
+          //   version: String
+          //   arch: String
+          //   status: String ('queueing, successful, errored')
+          //   errors: [String]
+          // }
+          AutoPublish.insert({
+            createdAt: now,
+            publishedAt: now,
+            pkgName: sub.pkgName,
+            tagName: tagName,
+            releaseTargetCommittish: releaseTargetCommittish,
+            repoCloneUrl: repoCloneUrl,
+            status: 'queueing',
+          });
+        }
+        else {
+          // TODO: signal unapproved hook by creating a new issue somewhere...
+          console.log('Got unapproved hook!');
 
+          AutoPublish.insert({
+            createdAt: new Date(),
+            publishedAt: now,
+            pkgName: sub.pkgName,
+            tagName: tagName,
+            releaseName: releaseName,
+            releaseTargetCommittish: releaseTargetCommittish,
+            repoCloneUrl: repoCloneUrl,
+            errors: [
+              'Hook was not yet approved!'
+            ],
+            status: 'errored',
+          });
+        }
         // console.log('New Publish request created!');
       } else if (payload.head_commit) {
         // console.log('  push action');
