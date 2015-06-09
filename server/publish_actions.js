@@ -36,44 +36,55 @@ var publishNextPackage = function(){
         setter.errors = result.errors;
       }
 
-      AutoPublish.update(next._id, {$set: setter, $unset: {publishing: 1}});
+      try {
+        AutoPublish.update(next._id, {$set: setter, $unset: {publishing: 1}});
 
-      // Updates the subscription object to show the latest version
-      if (result.success) {
-        Subscriptions.update({
-          pkgName: next.pkgName
-        }, {
-          $set: {
-            pkgVersion: result.version
-          }
-        });
-      } else {
-        var
-          userCredentials = Meteor.settings.defaultGitHubUser,
-          failedPublishIssue = _.clone(Meteor.settings.issues.failedPublish)
-        ;
+        // Updates the subscription object to show the latest version
+        if (result.success) {
+          Subscriptions.update({
+            pkgName: next.pkgName
+          }, {
+            $set: {
+              pkgVersion: result.version
+            }
+          });
+        } else {
+          var
+            userCredentials = Meteor.settings.defaultGitHubUser,
+            failedPublishIssue = _.clone(Meteor.settings.issues.failedPublish)
+          ;
 
-        // Adds the body for the issue
-        failedPublishIssue.body =
-          'Publish for package ' +
-          next.pkgName +
-          ' failed, please revise!'
-        ;
+          // Adds the body for the issue
+          failedPublishIssue.body =
+            'Publish for package ' +
+            next.pkgName +
+            ' failed, please revise!'
+          ;
 
-        github.authenticate({
-          type: "basic",
-          username: userCredentials.userName,
-          password: userCredentials.pwd
-        });
-        github.issues.createComment(failedPublishIssue);
+          github.authenticate({
+            type: "basic",
+            username: userCredentials.userName,
+            password: userCredentials.pwd
+          });
+          github.issues.createComment(failedPublishIssue);
+        }
       }
-
+      catch (err) {
+        console.log('Some error occured after publishing operations!');
+        console.dir(err);
+      }
       // Goes to the next queueing package (in case it exists...)
       publishNextPackage();
     });
 
-    // Starts publishing operations...
-    regularPublish(next, publishCallback);
+    try {
+      // Starts publishing operations...
+      regularPublish(next, publishCallback);
+    }
+    catch (err) {
+      console.log('Some error occured during publishing operations!');
+      console.dir(err);
+    }
   }
   else {
     // Marks the end of publishing
