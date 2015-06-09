@@ -98,11 +98,7 @@ isPublishing = true;
 publishNextPackage();
 
 // Observes documents added to the AutoPublish queue
-AutoPublish.find(queueingSelector, {
-  sort: {
-    createdAt: 1,
-  }
-}).observeChanges({
+AutoPublish.find(queueingSelector, oldestQueueing).observeChanges({
   added: function () {
     // Start Publishing new queueing packages if not already started...
     if (!isPublishing) {
