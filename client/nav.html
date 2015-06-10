@@ -8,6 +8,7 @@
     {{/if}}
     {{#if isInRole 'admin'}}
       <a class="{{isActiveRoute regex='hooks'}} item" href="{{pathFor 'hooks'}}">Hooks</a>
+      <a class="{{isActiveRoute regex='subscriptions'}} item" href="{{pathFor 'subscriptions'}}">Subscriptions</a>
     {{/if}}
     <div class="right menu">
       {{> navButton}}

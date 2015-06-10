@@ -220,9 +220,17 @@ Meteor.methods({
     // Checks the user is an admin
     if (Roles.userIsInRole(this.userId, ['admin'])) {
       // Checks the requested hook exists
-      var hook = KnownHooks.findOne({"repoFullName": repoFullName});
+      var
+        hook = KnownHooks.findOne({"repoFullName": repoFullName}),
+        user = Meteor.users.findOne(this.userId)
+      ;
       if (hook) {
-        KnownHooks.update(hook._id, {$set: {deleted: true}});
+        var newAttrs = {
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: user.profile.login,
+        };
+        KnownHooks.update(hook._id, {$set: newAttrs});
       }
     }
     else {

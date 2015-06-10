@@ -1,0 +1,27 @@
+<template name="subscriptionItem">
+  <div class="item">
+    <div class="right floated ui basic fitted segment">
+      <div class="ui {{#if updating}}active{{/if}} inverted dimmer">
+        <div class="ui mini loader"></div>
+      </div>
+      <div class="ui toggle checkbox">
+        <input type="checkbox" name="autopublish">
+        <label>Approved</label>
+      </div>
+      <div id="removeSubscription" class="tiny ui basic icon button">
+        <i class="red remove icon"></i>
+      </div>
+    </div>
+    <div class="content">
+      <div class="header">
+        <a href="{{gitUrl}}" target="_blank" class="header">
+          {{{displayName}}}
+        </a>
+      </div>
+      Last version: <i>{{pkgVersion}}</i>
+      {{#if approved}}
+        Approved by: <i>{{approvedBy}}</i>, {{approvalDate}}
+      {{/if}}
+    </div>
+  </div>
+</template>

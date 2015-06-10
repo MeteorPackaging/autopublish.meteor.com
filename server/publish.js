@@ -52,6 +52,22 @@ Meteor.publish('completedPublish', function(limit){
 });
 
 
+Meteor.publish('allSubscriptions', function(){
+  return Subscriptions.find({
+    deleted: {'$ne': true}
+  }, {
+    fields: {
+      createdAt: 0,
+      createdBy: 0,
+      deleted: 0,
+      hookEvents: 0,
+      hookId: 0,
+      tested: 0,
+    }
+  });
+});
+
+
 Meteor.publish('subscriptions', function(limit){
   check(limit, Number);
   return Subscriptions.find({
@@ -60,8 +76,11 @@ Meteor.publish('subscriptions', function(limit){
     limit: limit,
     sort: {pkgName: 1},
     fields: {
+      approvedAt: 0,
+      approvedBy: 0,
       createdAt: 0,
       createdBy: 0,
+      deleted: 0,
       hookEvents: 0,
       hookId: 0,
       repo: 0,

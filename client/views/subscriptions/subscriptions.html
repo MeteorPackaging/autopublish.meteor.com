@@ -1,0 +1,24 @@
+<template name="Subscriptions">
+  <div class="ui one column subscriptions page grid">
+    <div class="row">
+      <div class="column">
+        <h2 class="ui header">
+          Subscriptions {{numSubscriptions}}
+        </h2>
+        <div class="ui fluid icon input">
+          <input id="subscriptionSearch" type="text" placeholder="Search...">
+          <i class="circular search icon"></i>
+        </div>
+        <div class="ui subscriptions segment">
+          <div class="ui divided list">
+            {{#each subscriptions}}
+              {{> subscriptionItem}}
+            {{else}}
+              <p>No Subscriptions found!</p>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

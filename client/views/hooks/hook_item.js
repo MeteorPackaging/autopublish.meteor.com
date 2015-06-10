@@ -55,18 +55,24 @@ Template.hookItem.events({
     e.preventDefault();
     instance.updating.set(true);
 
+    var newStatus = $(e.currentTarget).checkbox('is checked');
     Meteor.call('toggleApproveHook',
       this.hook_id,
       this.repoFullName,
       function(err, result) {
         instance.updating.set(false);
-        if (result.approved !== undefined) {
-          var status = 'uncheck';
-          if (result.approved) {
-            status = 'check';
-          }
-          instance.$('.ui.checkbox').checkbox(status);
+        if (!err && !!result && 'approved' in result){
+          newStatus = result.approved;
+          instance.data.approved = newStatus;
         }
+        else {
+          newStatus = !newStatus;
+        }
+        var status = 'uncheck';
+        if (newStatus){
+          status = 'check';
+        }
+        instance.$('.ui.checkbox').checkbox(newStatus);
       }
     );
   },
