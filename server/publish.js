@@ -80,6 +80,8 @@ Meteor.publish('subscriptions', function(limit){
       approvedBy: 0,
       createdAt: 0,
       createdBy: 0,
+      disapprovedAt: 0,
+      disapprovedBy: 0,
       deleted: 0,
       hookEvents: 0,
       hookId: 0,
