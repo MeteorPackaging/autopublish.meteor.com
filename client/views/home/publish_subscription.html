@@ -14,7 +14,10 @@
 --}}
 	<div class="item">
 		<div class="content">
-			<a href="{{atmosphereUrl}}" target="_blank" class="header">{{pkgName}}</a>
+			<a href="{{atmosphereUrl}}" target="_blank" class="header">
+        {{pkgName}}
+        {{#if binary}} (binary){{/if}}
+      </a>
 			<div class="meta">
 				<span class="version">Latest Version: {{pkgVersion}}</span>
 			</div>
