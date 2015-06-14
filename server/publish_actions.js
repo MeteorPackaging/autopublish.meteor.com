@@ -66,7 +66,7 @@ var publishNextPackage = function(){
               AutoPublish.insert({
                 binary: true,
                 forArch: arch,
-                createdAt: new Date(),
+                createdAt: next.createdAt,
                 publishedAt: next.publishedAt,
                 pkgName: next.pkgName,
                 tagName: next.tagName,
