@@ -81,4 +81,8 @@ Template.publishAction.events({
     e.preventDefault();
     Router.go('log.show', {_id: this._id});
   },
+  'click .green.tag.label': function(e){
+    e.preventDefault();
+    Router.go('log.show', {_id: this._id});
+  },
 });
