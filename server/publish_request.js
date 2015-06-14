@@ -97,6 +97,16 @@ Meteor.methods({
           //   status: String ('queueing, successful, errored')
           //  error: String
           // }
+          AutoPublish.insert({
+            createdAt: new Date(),
+            publishedAt: publishedAt,
+            pkgName: sub.pkgName,
+            tagName: tagName,
+            releaseName: releaseName,
+            releaseTargetCommittish: releaseTargetCommittish,
+            repoCloneUrl: repoCloneUrl,
+            status: 'queueing',
+          });
 
           // Publish for all architectures in case of binary package
           if (sub.binary) {
@@ -121,19 +131,6 @@ Meteor.methods({
                 repoCloneUrl: repoCloneUrl,
                 status: 'queueing',
               });
-            });
-          }
-          else {
-            // Just one publish operation...
-            AutoPublish.insert({
-              createdAt: new Date(),
-              publishedAt: publishedAt,
-              pkgName: sub.pkgName,
-              tagName: tagName,
-              releaseName: releaseName,
-              releaseTargetCommittish: releaseTargetCommittish,
-              repoCloneUrl: repoCloneUrl,
-              status: 'queueing',
             });
           }
         }
