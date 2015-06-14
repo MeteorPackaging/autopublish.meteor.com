@@ -36,8 +36,8 @@ getBuildMachine = function(architecture, pkgInfo, userCredentials, callback) {
   machine.connectedMessage = "Connected to Support Machine";
 
   // Command sequence
-  actions.checkMeteorVersion(machine);
-  actions.loginMeteorUser(machine, userCredentials);
+  actions.checkMeteorVersion(machine, pkgInfo);
+  actions.loginMeteorUser(machine, pkgInfo, userCredentials);
   actions.getBuildMachine(machine, architecture);
 
   // Actually starts the command sequence
