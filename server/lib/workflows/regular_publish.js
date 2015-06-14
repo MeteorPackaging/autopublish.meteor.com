@@ -15,7 +15,7 @@ regularPublish = function(pkgInfo, callback) {
   ;
 
   getBuildMachine(
-    "os.linux.x86_64",
+    pkgInfo.firstArch || "os.linux.x86_64",
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {

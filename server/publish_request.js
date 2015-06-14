@@ -50,6 +50,8 @@ Meteor.methods({
     });
 
     if (sub) {
+      var newDoc = null;
+
       // TODO: check subscription for approval!
 
       if (payload.hook) {
@@ -98,7 +100,8 @@ Meteor.methods({
           //   status: String ('queueing, successful, errored')
           //  error: String
           // }
-          AutoPublish.insert({
+          newDoc = {
+            binary: !!sub.binary,
             createdAt: new Date(),
             publishedAt: publishedAt,
             pkgName: sub.pkgName,
@@ -107,14 +110,17 @@ Meteor.methods({
             releaseTargetCommittish: releaseTargetCommittish,
             repoCloneUrl: repoCloneUrl,
             status: 'queueing',
-          });
+          };
+          if (!!sub.binary && sub.firstArch) {
+            newDoc.firstArch = sub.firstArch;
+          }
+          AutoPublish.insert(newDoc);
         }
         else {
           // TODO: signal unapproved hook by creating a new issue somewhere...
           console.log('Got unapproved hook!');
 
           AutoPublish.insert({
-            binary: !!sub.binary,
             createdAt: new Date(),
             publishedAt: publishedAt,
             pkgName: sub.pkgName,
@@ -160,7 +166,7 @@ Meteor.methods({
           //   status: String ('queueing, successful, errored')
           //   errors: [String]
           // }
-          AutoPublish.insert({
+          newDoc = {
             binary: !!sub.binary,
             createdAt: now,
             publishedAt: now,
@@ -169,7 +175,11 @@ Meteor.methods({
             releaseTargetCommittish: releaseTargetCommittish,
             repoCloneUrl: repoCloneUrl,
             status: 'queueing',
-          });
+          };
+          if (!!sub.binary && sub.firstArch) {
+            newDoc.firstArch = sub.firstArch;
+          }
+          AutoPublish.insert(newDoc);
         }
         else {
           // TODO: signal unapproved hook by creating a new issue somewhere...
