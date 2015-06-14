@@ -97,16 +97,45 @@ Meteor.methods({
           //   status: String ('queueing, successful, errored')
           //  error: String
           // }
-          AutoPublish.insert({
-            createdAt: new Date(),
-            publishedAt: publishedAt,
-            pkgName: sub.pkgName,
-            tagName: tagName,
-            releaseName: releaseName,
-            releaseTargetCommittish: releaseTargetCommittish,
-            repoCloneUrl: repoCloneUrl,
-            status: 'queueing',
-          });
+
+          // Publish for all architectures in case of binary package
+          if (sub.binary) {
+            var availableArchitectures = [
+              'os.linux.x86_32',
+              'os.linux.x86_64',
+              'os.osx.x86_64',
+              'os.windows.x86_32',
+            ];
+
+            // Insert a publish operation for each different architecture
+            _.each(availableArchitectures, function(arch){
+              AutoPublish.insert({
+                binary: true,
+                forArch: arch,
+                createdAt: new Date(),
+                publishedAt: publishedAt,
+                pkgName: sub.pkgName,
+                tagName: tagName,
+                releaseName: releaseName,
+                releaseTargetCommittish: releaseTargetCommittish,
+                repoCloneUrl: repoCloneUrl,
+                status: 'queueing',
+              });
+            });
+          }
+          else {
+            // Just one publish operation...
+            AutoPublish.insert({
+              createdAt: new Date(),
+              publishedAt: publishedAt,
+              pkgName: sub.pkgName,
+              tagName: tagName,
+              releaseName: releaseName,
+              releaseTargetCommittish: releaseTargetCommittish,
+              repoCloneUrl: repoCloneUrl,
+              status: 'queueing',
+            });
+          }
         }
         else {
           // TODO: signal unapproved hook by creating a new issue somewhere...

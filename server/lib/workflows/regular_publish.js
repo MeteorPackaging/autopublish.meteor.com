@@ -10,10 +10,13 @@
 
 regularPublish = function(pkgInfo, callback) {
 
-  var userCredentials = Meteor.settings.defaultMeteorUser;
+  var
+    publishForArch = !!pkgInfo.binary && pkgInfo.forArch,
+    userCredentials = Meteor.settings.defaultMeteorUser
+  ;
 
   getBuildMachine(
-    "os.linux.x86_64",
+    publishForArch ? pkgInfo.forArch : "os.linux.x86_64",
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
@@ -96,7 +99,7 @@ regularPublish = function(pkgInfo, callback) {
         actions.checkPackageName(buildMachine, pkgInfo);
 
         // Runs 'meteor publish'
-        actions.meteorPublish(buildMachine, pkgInfo);
+        actions.meteorPublish(buildMachine, pkgInfo, publishForArch);
 
 
         // Everything done!

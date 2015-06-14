@@ -226,10 +226,11 @@ actions.logoutMeteorUser = function(machine) {
 };
 
 
-actions.meteorPublish = function(machine, pkgInfo) {
+actions.meteorPublish = function(machine, pkgInfo, publishForArch) {
   // Runs 'meteor publish'
 
-  var cmd = "~/.meteor/meteor publish";
+  var cmd = publishForArch === true ?
+    "~/.meteor/meteor publish-for-arch" : "~/.meteor/meteor publish";
 
   var afterPublishCallback = function(response, hostObj) {
     if (machine.verbose) {
@@ -239,7 +240,7 @@ actions.meteorPublish = function(machine, pkgInfo) {
     if (/There is no package named/gi.test(response)) {
       // Not published, first time publishing!
       // Triggers a `meteor publish --create` command
-      var cmd = "~/.meteor/meteor publish --create";
+      cmd += " --create";
       machine.addCommandToFront(cmd);
       machine.addCommandToFront("msg:First time publishing...");
       machine.addCompleteAction({
