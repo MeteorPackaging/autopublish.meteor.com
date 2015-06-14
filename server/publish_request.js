@@ -7,14 +7,6 @@
 */
 
 
-var availableArchitectures = [
-  'os.linux.x86_32',
-  'os.linux.x86_64',
-  'os.osx.x86_64',
-  'os.windows.x86_32',
-];
-
-
 Meteor.methods({
   processPublishRequest: function(payload) {
     // console.log('Received publish request');
@@ -116,31 +108,13 @@ Meteor.methods({
             repoCloneUrl: repoCloneUrl,
             status: 'queueing',
           });
-
-          // Publish for all architectures in case of binary package
-          if (sub.binary) {
-            // Insert a publish operation for each different architecture
-            _.each(availableArchitectures, function(arch){
-              AutoPublish.insert({
-                binary: true,
-                forArch: arch,
-                createdAt: new Date(),
-                publishedAt: publishedAt,
-                pkgName: sub.pkgName,
-                tagName: tagName,
-                releaseName: releaseName,
-                releaseTargetCommittish: releaseTargetCommittish,
-                repoCloneUrl: repoCloneUrl,
-                status: 'queueing',
-              });
-            });
-          }
         }
         else {
           // TODO: signal unapproved hook by creating a new issue somewhere...
           console.log('Got unapproved hook!');
 
           AutoPublish.insert({
+            binary: !!sub.binary,
             createdAt: new Date(),
             publishedAt: publishedAt,
             pkgName: sub.pkgName,
@@ -187,6 +161,7 @@ Meteor.methods({
           //   errors: [String]
           // }
           AutoPublish.insert({
+            binary: !!sub.binary,
             createdAt: now,
             publishedAt: now,
             pkgName: sub.pkgName,
@@ -195,24 +170,6 @@ Meteor.methods({
             repoCloneUrl: repoCloneUrl,
             status: 'queueing',
           });
-
-          // Publish for all architectures in case of binary package
-          if (sub.binary) {
-            // Insert a publish operation for each different architecture
-            _.each(availableArchitectures, function(arch){
-              AutoPublish.insert({
-                binary: true,
-                forArch: arch,
-                createdAt: now,
-                publishedAt: now,
-                pkgName: sub.pkgName,
-                tagName: tagName,
-                releaseTargetCommittish: releaseTargetCommittish,
-                repoCloneUrl: repoCloneUrl,
-                status: 'queueing',
-              });
-            });
-          }
         }
         else {
           // TODO: signal unapproved hook by creating a new issue somewhere...

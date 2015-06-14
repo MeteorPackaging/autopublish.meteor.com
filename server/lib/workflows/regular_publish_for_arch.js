@@ -3,19 +3,19 @@
     AutoPublish: false,
     getBuildMachine: false,
     Host: false,
-    regularPublish: true
+    regularPublishForArch: true
 */
 'use strict';
 
 
-regularPublish = function(pkgInfo, callback) {
+regularPublishForArch = function(pkgInfo, callback) {
 
   var
     userCredentials = Meteor.settings.defaultMeteorUser
   ;
 
   getBuildMachine(
-    "os.linux.x86_64",
+    pkgInfo.forArch,
     pkgInfo,
     userCredentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
@@ -67,38 +67,8 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.addCommand('msg:Preparing environment...');
         buildMachine.addCommand(cmd);
 
-        // Clones the repository and checks out the latest release
-        // FIXME: does not work on git 1.7 (i.e. on meteor build machines...)
-        //actions.cloneRepositoryAtTag(buildMachine, pkgInfo, "autopublish");
-
-        // Clones the repository and checks out the latest release
-        actions.cloneRepository(buildMachine, pkgInfo, "autopublish");
-
-        // Moves into the cloned repo
-        cmd = 'cd autopublish';
-        buildMachine.addCommand(cmd);
-        buildMachine.addCompleteAction({
-          cmd: cmd,
-          callback: function(response, hostObj) {
-            if (/No such file or directory/.test(response)){
-              hostObj.result.success = false;
-              hostObj.errors.push('Unable to clone the repository');
-              this.endCommands();
-            }
-          }
-        });
-
-        // Checks out the latest release
-        buildMachine.addCommand('msg:Done!');
-        actions.checkoutTag(buildMachine, pkgInfo);
-
-        // Check the package name to make sure it matches the correct one
-        // this is to prevent attacks trying to publish with different names
-        // than the registered one!
-        actions.checkPackageName(buildMachine, pkgInfo);
-
         // Runs 'meteor publish'
-        actions.meteorPublish(buildMachine, pkgInfo);
+        actions.meteorPublish(buildMachine, pkgInfo, true);
 
         // Everything done!
         buildMachine.addCommand('msg:Done!');

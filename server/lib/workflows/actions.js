@@ -231,7 +231,10 @@ actions.meteorPublish = function(machine, pkgInfo, publishForArch) {
 
   var cmd = null;
   if (publishForArch) {
-    cmd = "~/.meteor/meteor publish-for-arch";
+    cmd =
+      "~/.meteor/meteor publish-for-arch " +
+      pkgInfo.pkgName + '@' + pkgInfo.version
+    ;
   }
   else {
     cmd = "~/.meteor/meteor publish";

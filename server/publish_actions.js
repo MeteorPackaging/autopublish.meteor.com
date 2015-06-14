@@ -5,8 +5,17 @@
     oldestQueueing: false,
     queueingSelector: false,
     regularPublish: false,
+    regularPublishForArch: false,
     Subscriptions: false
 */
+
+
+var availableArchitectures = [
+  'os.linux.x86_32',
+  'os.linux.x86_64',
+  'os.osx.x86_64',
+  'os.windows.x86_32',
+];
 
 var isPublishing = false;
 
@@ -48,6 +57,27 @@ var publishNextPackage = function(){
               pkgVersion: result.version
             }
           });
+
+          // Publish for all architectures in case of
+          // first `meteor publish` of a binary package
+          if (next.binary && !next.forArch) {
+            // Insert a publish operation for each different architecture
+            _.each(availableArchitectures, function(arch){
+              AutoPublish.insert({
+                binary: true,
+                forArch: arch,
+                createdAt: new Date(),
+                publishedAt: next.publishedAt,
+                pkgName: next.pkgName,
+                tagName: next.tagName,
+                releaseTargetCommittish: next.releaseTargetCommittish,
+                repoCloneUrl: next.repoCloneUrl,
+                status: 'queueing',
+                version: result.version,
+              });
+            });
+          }
+
         } else {
           var
             userCredentials = Meteor.settings.defaultGitHubUser,
@@ -77,9 +107,15 @@ var publishNextPackage = function(){
       publishNextPackage();
     });
 
+    // Starts publishing operations...
     try {
-      // Starts publishing operations...
-      regularPublish(next, publishCallback);
+      // Select appropriate workflow...
+      if (next.binary && next.forArch) {
+        regularPublishForArch(next, publishCallback);
+      }
+      else {
+        regularPublish(next, publishCallback);
+      }
     }
     catch (err) {
       console.log('Some error occured during publishing operations!');

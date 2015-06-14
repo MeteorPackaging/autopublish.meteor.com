@@ -2,7 +2,8 @@
     Host: true,
     actions: true,
     getBuildMachine: true,
-    regularPublish: true
+    regularPublish: true,
+    regularPublishForArch: true
 */
 
 // Host object to be used for ssh conncetions
@@ -14,5 +15,6 @@ actions = {};
 
 getBuildMachine = undefined;
 
-// Regular Package Publish Workflow
+// Regular Package Publish Workflows
 regularPublish = undefined;
+regularPublishForArch = undefined;
