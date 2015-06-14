@@ -52,16 +52,24 @@ regularPublishForArch = function(pkgInfo, callback) {
         // Command sequence
         buildMachine.addCommand('msg:Initial checks...');
 
-        // Log free memory
+        // Possibly log free memory
         var cmd = 'free';
-        buildMachine.addCommand(cmd);
+        if (pkgInfo.forArch !== 'os.windows.x86_32') {
+          buildMachine.addCommand(cmd);
+        }
 
         actions.checkMeteorVersion(buildMachine, pkgInfo);
         actions.loginMeteorUser(buildMachine, pkgInfo, credentials);
         actions.checkMeteorUser(buildMachine, pkgInfo, credentials.userName);
 
         // Possibly removes old autopublish folder
-        cmd = 'rm -rf autopublish';
+        if (pkgInfo.forArch === 'os.windows.x86_32') {
+          cmd = 'rmdir /s /q autopublish';
+        }
+        else {
+          cmd = 'rm -rf autopublish';
+        }
+
         buildMachine.addCommand('msg:Preparing environment...');
         buildMachine.addCommand(cmd);
 

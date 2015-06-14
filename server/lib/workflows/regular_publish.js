@@ -10,10 +10,13 @@
 
 regularPublish = function(pkgInfo, callback) {
 
-  var credentials = Meteor.settings.defaultMeteorUser;
+  var
+    arch = pkgInfo.firstArch || "os.linux.x86_64",
+    credentials = Meteor.settings.defaultMeteorUser
+  ;
 
   getBuildMachine(
-    pkgInfo.firstArch || "os.linux.x86_64",
+    arch,
     pkgInfo,
     credentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
@@ -48,6 +51,9 @@ regularPublish = function(pkgInfo, callback) {
         buildMachine.connectedMessage = "Connected to remote Build Machine";
         // Uncomment the following line to get some debug log
         // buildMachine.verbose = true;
+
+        // Log the current architecture
+        buildMachine.addCommand('msg:Running on ' + arch + '...');
 
         // Command sequence
         buildMachine.addCommand('msg:Initial checks...');
