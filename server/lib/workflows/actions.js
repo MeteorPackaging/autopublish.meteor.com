@@ -289,7 +289,7 @@ actions.meteorPublish = function(machine, pkgInfo, publishForArch) {
         // Successfully published!
         hostObj.result.success = true;
         // Gets the published version
-        hostObj.result.version = match[1];
+        hostObj.result.version = match[1].replace('\n', '').replace('\r', '');
       }
       else {
         hostObj.result.success = false;
