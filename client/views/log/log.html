@@ -30,6 +30,9 @@
 							<div class="content">
 								<div class="header">Details:</div>
 								<ul class="list">
+									{{#if firstArch}}
+										<li><b>Architecture:</b> {{firstArch}}</li>
+									{{/if}}
 									{{#if forArch}}
 										<li><b>Architecture:</b> {{forArch}}</li>
 									{{/if}}
