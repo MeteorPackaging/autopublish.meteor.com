@@ -16,7 +16,7 @@
 		<div class="content">
 			<a href="{{atmosphereUrl}}" target="_blank" class="header">
 				{{pkgName}}
-				{{#if binary}} ({{forArch}}){{/if}}
+				{{#if forArch}} ({{forArch}}){{/if}}
 			</a>
 			{{#if isInRole 'admin'}}
 		    <div id="republishButton"  class="tiny compact circular ui icon button">
