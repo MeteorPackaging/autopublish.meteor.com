@@ -10,14 +10,12 @@
 
 regularPublishForArch = function(pkgInfo, callback) {
 
-  var
-    userCredentials = Meteor.settings.defaultMeteorUser
-  ;
+  var credentials = Meteor.settings.defaultMeteorUser;
 
   getBuildMachine(
     pkgInfo.forArch,
     pkgInfo,
-    userCredentials,
+    credentials,
     Meteor.bindEnvironment(function(err, getMachineResult) {
       if (getMachineResult.success) {
 
@@ -58,9 +56,9 @@ regularPublishForArch = function(pkgInfo, callback) {
         var cmd = 'free';
         buildMachine.addCommand(cmd);
 
-        actions.checkMeteorVersion(buildMachine);
-        actions.loginMeteorUser(buildMachine, userCredentials);
-        actions.checkMeteorUser(buildMachine, userCredentials.userName);
+        actions.checkMeteorVersion(buildMachine, pkgInfo);
+        actions.loginMeteorUser(buildMachine, pkgInfo, credentials);
+        actions.checkMeteorUser(buildMachine, pkgInfo, credentials.userName);
 
         // Possibly removes old autopublish folder
         cmd = 'rm -rf autopublish';

@@ -4,33 +4,37 @@
 'use strict';
 
 
-actions.checkoutTag = function(machine, repoInfo){
-  var cmd = "git checkout " + repoInfo.tagName;
-  machine.addCommand('msg:Checking out ' + repoInfo.tagName + '...');
+actions.checkoutTag = function(machine, pkgInfo){
+  var cmd = "git checkout " + pkgInfo.tagName;
+  machine.addCommand('msg:Checking out ' + pkgInfo.tagName + '...');
   machine.addCommand(cmd);
 };
 
 
-actions.cloneRepository = function(machine, repoInfo, destinationFolder){
-  var cmd = "git clone " + repoInfo.repoCloneUrl + " " + destinationFolder;
+actions.cloneRepository = function(machine, pkgInfo, destinationFolder){
+  var cmd = "git clone " + pkgInfo.repoCloneUrl + " " + destinationFolder;
   machine.addCommand('msg:Cloning Repository...');
   machine.addCommand(cmd);
 };
 
 
-actions.cloneRepositoryAtTag = function(machine, repoInfo, destinationFolder){
+actions.cloneRepositoryAtTag = function(machine, pkgInfo, destinationFolder){
   var cmd =
-    "git clone --branch " + repoInfo.tagName + " --depth 1 " +
-    repoInfo.repoCloneUrl + " " +  destinationFolder
+    "git clone --branch " + pkgInfo.tagName + " --depth 1 " +
+    pkgInfo.repoCloneUrl + " " +  destinationFolder
   ;
-  machine.addCommand('msg:Cloning Repository at ' + repoInfo.tagName + '...');
+  machine.addCommand('msg:Cloning Repository at ' + pkgInfo.tagName + '...');
   machine.addCommand(cmd);
 };
 
 
-actions.checkMeteorUser = function(machine, username) {
+actions.checkMeteorUser = function(machine, pkgInfo, username) {
   // Checks currently logged in meteor user
-  var cmd = '~/.meteor/meteor whoami';
+  var cmd = '';
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor whoami';
   machine.addCommand('msg:Checking Meteor User...');
   machine.addCommand(cmd);
   machine.addCompleteAction({
@@ -54,9 +58,13 @@ actions.checkMeteorUser = function(machine, username) {
   });
 };
 
-actions.checkMeteorVersion = function(machine) {
+actions.checkMeteorVersion = function(machine, pkgInfo) {
   // Checks for currently installed Meteor Version
-  var cmd = '~/.meteor/meteor --version';
+  var cmd = '';
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor --version';
   machine.addCommand('msg:Checking Meteor Version...');
   machine.addCommand(cmd);
   machine.addCompleteAction({
@@ -113,7 +121,11 @@ actions.checkPackageName = function(machine, pkgInfo) {
 actions.done = function(machine, pkgInfo) {
   // Double checks by running 'meteor show'
   // end eventually marks the publish action as *completed*!
-  var cmd = '~/.meteor/meteor show ' + pkgInfo.pkgName;
+  var cmd = '';
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor show ' + pkgInfo.pkgName;
   machine.addCommand('msg:Double checking...');
   machine.addCommand(cmd);
   machine.addCompleteAction({
@@ -150,15 +162,19 @@ actions.getBuildMachine = function(machine, architecture) {
   });
 };
 
-actions.loginMeteorUser = function(machine, credentials) {
+actions.loginMeteorUser = function(machine, pkgInfo, credentials) {
   // Logs in a new meteor user
   var
-    cmd = '~/.meteor/meteor login',
+    cmd = '',
     pwdEntered = false,
     usernameEntered = false,
     loginSuccessDetected = false,
     loginFailed = true
   ;
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor login';
 
   machine.addCommand('msg:Logging in Meteor User...');
   machine.addCommand(cmd);
@@ -218,9 +234,13 @@ actions.loginMeteorUser = function(machine, credentials) {
 };
 
 
-actions.logoutMeteorUser = function(machine) {
+actions.logoutMeteorUser = function(machine, pkgInfo) {
   // Logs out the current meteor user
-  var cmd = '~/.meteor/meteor logout';
+  var cmd = '';
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor logout';
   machine.addCommand('msg:Logging out Meteor User...');
   machine.addCommand(cmd);
 };
@@ -229,18 +249,14 @@ actions.logoutMeteorUser = function(machine) {
 actions.meteorPublish = function(machine, pkgInfo, publishForArch) {
   // Runs 'meteor publish'
 
-  var cmd = null;
+  var cmd = '';
+  if (pkgInfo.forArch && pkgInfo.forArch !== 'os.windows.x86_32') {
+    cmd += '~/.meteor/';
+  }
+  cmd += 'meteor publish';
   if (publishForArch) {
-    cmd =
-      "~/.meteor/meteor publish-for-arch " +
-      pkgInfo.pkgName + '@' + pkgInfo.version
-    ;
+    cmd += '-for-arch ' + pkgInfo.pkgName + '@' + pkgInfo.version;
   }
-  else {
-    cmd = "~/.meteor/meteor publish";
-  }
-  console.log("meteorPublish cmd:");
-  console.log(cmd);
 
   var afterPublishCallback = function(response, hostObj) {
     if (machine.verbose) {
