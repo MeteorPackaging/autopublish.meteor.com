@@ -11,9 +11,13 @@
 regularPublish = function(pkgInfo, callback) {
 
   var
-    arch = pkgInfo.firstArch || "os.linux.x86_64",
+    arch = "os.linux.x86_64",
     credentials = Meteor.settings.defaultMeteorUser
   ;
+
+  if (!!pkgInfo.firstArch) {
+      arch = pkgInfo.firstArch;
+  }
 
   getBuildMachine(
     arch,
