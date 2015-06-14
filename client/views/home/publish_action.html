@@ -41,13 +41,13 @@
 					<div class="ui small label time">{{released}}</div>
 				{{else}}
 					{{#if successful}}
-						<div class="ui right floated green small tag label">
+						<a class="ui right floated green small tag label">
 							Version {{version}}
-						</div>
+						</a>
 					{{else}}
-						<div class="ui right floated red small errored label">
+						<a class="ui right floated red small errored label">
 							<i class="warning sign icon"></i> Errored!
-						</div>
+						</a>
 						<div class="ui lean flowing popup">
 							<div class="ui warning icon message">
 								<i class="small warning sign icon"></i>
