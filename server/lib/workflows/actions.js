@@ -229,8 +229,15 @@ actions.logoutMeteorUser = function(machine) {
 actions.meteorPublish = function(machine, pkgInfo, publishForArch) {
   // Runs 'meteor publish'
 
-  var cmd = publishForArch === true ?
-    "~/.meteor/meteor publish-for-arch" : "~/.meteor/meteor publish";
+  var cmd = null;
+  if (publishForArch) {
+    cmd = "~/.meteor/meteor publish-for-arch";
+  }
+  else {
+    cmd = "~/.meteor/meteor publish";
+  }
+  console.log("meteorPublish cmd:");
+  console.log(cmd);
 
   var afterPublishCallback = function(response, hostObj) {
     if (machine.verbose) {
